@@ -172,7 +172,8 @@
       <div id="grain"></div>
       <div id="subs"></div>
 
-      <audio id="score" src="assets/music/temp-score.wav" data-start="0" data-duration="30" data-track-index="8"></audio>
+      <audio id="score" src="assets/music/temp-score.wav" data-start="0" data-duration="30" data-volume="0.45" data-track-index="8"></audio>
+      <audio id="voix" src="assets/audio/voix-montage.wav" data-start="0" data-duration="30" data-track-index="9"></audio>
     </div>
 
     <script>
@@ -371,18 +372,18 @@
         $("#grain").style.backgroundImage = `url(${c.toDataURL()})`;
       })();
 
-      // ---------------------------------------------------------------- subtitles (word timings: replace with onsets.json once the voice exists)
+      // ---------------------------------------------------------------- subtitles (word timings from build-voice.py -> cues.json)
       const CUES = [
-        { key: "kurrë", words: [["Ka", 0.8], ["vende", 1.0], ["që", 1.35], ["i", 1.5], ["lamë", 1.62], ["mbrapa…", 1.9]], end: 2.85 },
-        { key: "kurrë", words: [["por", 2.95], ["që", 3.12], ["kurrë", 3.3], ["nuk", 3.75], ["na", 3.95], ["lanë", 4.1], ["neve.", 4.38]], end: 5.3 },
-        { key: "gjyshërve,", words: [["Në", 5.8], ["zânin", 6.0], ["e", 6.35], ["gjyshërve,", 6.5]], end: 7.35 },
-        { key: "nanës,", words: [["në", 7.45], ["fjalët", 7.65], ["e", 7.98], ["nanës,", 8.12]], end: 8.95 },
-        { key: "kujtesa", words: [["jeton", 9.05], ["kujtesa", 9.4], ["jonë.", 9.9]], end: 10.9 },
-        { key: "larg,", words: [["Edhe", 11.5], ["kur", 11.8], ["jeta", 12.0], ["na", 12.35], ["çon", 12.55], ["larg,", 12.85]], end: 14.05 },
-        { key: "gjuha", words: [["gjuha", 14.2], ["na", 14.6], ["e", 14.75], ["kujton", 14.9], ["prej", 15.35], ["kah", 15.6], ["vijmë.", 15.85]], end: 17.2 },
-        { key: "trashëgimia", words: [["Sepse", 18.6], ["trashëgimia", 18.95], ["nuk", 19.6], ["asht", 19.8], ["veç", 20.0], ["ajo", 20.25], ["që", 20.5], ["marrim…", 20.7]], end: 21.8 },
-        { key: "brezave.", words: [["asht", 21.9], ["edhe", 22.15], ["ajo", 22.4], ["që", 22.65], ["ua", 22.85], ["lamë", 23.05], ["brezave.", 23.35]], end: 24.6 },
-        { key: "", words: [["Mos", 26.4], ["e", 26.75], ["harro", 26.95], ["kush", 27.45], ["je.", 27.75]], end: 28.15 },
+        {key: "kurrë", words: [["Ka", 0.8], ["vende", 1.01], ["që", 1.36], ["i", 1.56], ["lamë", 1.77], ["mbrapa…", 2.12]], end: 2.92},
+        {key: "kurrë", words: [["por", 2.99], ["që", 3.12], ["kurrë", 3.39], ["nuk", 3.7], ["na", 3.89], ["lanë", 4.07], ["neve.", 4.39]], end: 5.15},
+        {key: "gjyshërve,", words: [["Në", 5.8], ["zânin", 6.01], ["e", 6.36], ["gjyshërve,", 6.57]], end: 7.22},
+        {key: "nanës,", words: [["në", 7.27], ["fjalët", 7.49], ["e", 7.86], ["nanës,", 8.08]], end: 8.57},
+        {key: "kujtesa", words: [["jeton", 8.62], ["kujtesa", 8.98], ["jonë.", 9.5]], end: 10.31},
+        {key: "larg,", words: [["Edhe", 12.36], ["kur", 12.71], ["jeta", 12.92], ["na", 13.27], ["çon", 13.47], ["larg,", 13.68]], end: 14.15},
+        {key: "gjuha", words: [["gjuha", 14.2], ["na", 14.57], ["e", 14.79], ["kujton", 15.01], ["prej", 15.39], ["kah", 15.61], ["vijmë.", 15.82]], end: 16.65},
+        {key: "trashëgimia", words: [["Sepse", 18.6], ["trashëgimia", 18.92], ["nuk", 19.63], ["asht", 19.81], ["veç", 20.0], ["ajo", 20.18], ["që", 20.5], ["marrim…", 20.68]], end: 21.41},
+        {key: "brezave.", words: [["asht", 21.46], ["edhe", 21.65], ["ajo", 21.96], ["që", 22.28], ["ua", 22.47], ["lamë", 22.78], ["brezave.", 23.1]], end: 24.0},
+        {key: "", words: [["Mos", 26.6], ["e", 26.79], ["harro", 26.98], ["kush", 27.31], ["je.", 27.5]], end: 28.14},
       ];
       (function () {
         $("#subs").innerHTML = CUES.map((c, i) => `<div class="chunk" id="c${i}">${c.words.map(([w]) => `<span class="w${w === c.key ? " k" : ""}">${w}${w === c.key ? '<i class="stroke"></i>' : ""}</span>`).join(" ")}</div>`).join("");
