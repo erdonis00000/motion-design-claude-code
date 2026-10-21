@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """Temporary score for « Mos e harro kush je » (30 s), synthesised locally with numpy.
 
-Placeholder until a licensed track is chosen: soft piano, wind, strings that grow, a plucked
-çifteli-like drone from the language section, a frame-drum (lodër) pulse into the climax at
+Placeholder until a licensed track is chosen: soft piano, wind, strings that grow, a frame-drum (lodër) pulse into the climax at
 23.5-24.8 s, a hard stop at 24.85 s, then a single low note after « Mos e harro kush je » (28.2 s).
 
 Usage: python3 build-score.py  ->  assets/music/temp-score.wav (48 kHz stereo, about -16 LUFS via ffmpeg)
@@ -141,13 +140,6 @@ for i, (a, b, arp, pd) in enumerate(CH):
     strength = np.interp(a, [5.6, 11.2, 18.6, 23.5], [0.25, 0.45, 0.8, 1.2])
     place(mus, pad(pd, b - a + 1.2, attack=0.9 if a > 18 else 1.6), a, strength)
     place(mus, pad([p[:-1] + str(int(p[-1]) + 1) for p in pd], b - a + 1.2, attack=1.2), a, strength * 0.35, 0.3)
-
-# çifteli-like plucks over the language and heritage sections (D drone, A, ornaments)
-motif = [("D3", 0), ("A3", 0.3), ("D4", 0.6), ("C4", 0.75), ("A3", 0.9)]
-for bar in np.arange(11.2, 24.6, 1.2):
-    for n, off in motif:
-        if bar + off < 24.8:
-            place(mus, pluck(n), bar + off, 0.5 if bar < 18 else 0.7, 0.35)
 
 # frame drum pulse into the climax
 for td in [18.6, 20.4, 21.3, 22.2, 22.8, 23.5, 23.8, 24.1, 24.4]:
