@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="sq">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Mos e harro kush je</title>
+    <script src="assets/js/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Cinzel"; font-weight: 500; src: url("assets/fonts/Cinzel-500.woff2") format("woff2"); }
+      @font-face { font-family: "Cinzel"; font-weight: 700; src: url("assets/fonts/Cinzel-700.woff2") format("woff2"); }
+      @font-face { font-family: "Cormorant"; font-weight: 500; font-style: italic; src: url("assets/fonts/Cormorant-500-italic.woff2") format("woff2"); }
+      @font-face { font-family: "Inter"; font-weight: 500; src: url("assets/fonts/Inter-500.woff2") format("woff2"); }
+      @font-face { font-family: "Inter"; font-weight: 600; src: url("assets/fonts/Inter-600.woff2") format("woff2"); }
+
+      :root {
+        --black: #070506;
+        --red: #b3161f;
+        --red-deep: #5a0d12;
+        --gold: #c9a45c;
+        --gold-l: #ecd49c;
+        --white: #f5efe4;
+      }
+      body { margin: 0; background: var(--black); }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--black); }
+      .clip { position: absolute; inset: 0; overflow: hidden; }
+      .wrap, .cam, .layer, .full { position: absolute; inset: 0; }
+      svg.full { width: 1080px; height: 1920px; }
+
+      /* ---------- S1 KUJTESA : the window ---------- */
+      #s1-wall { background: radial-gradient(ellipse 70% 45% at 50% 42%, #2a1a14 0%, #140c0a 55%, #070506 100%); }
+      #s1-window { position: absolute; left: 230px; top: 360px; width: 620px; height: 860px; border-radius: 310px 310px 6px 6px; overflow: hidden; }
+      #s1-frame { position: absolute; left: 206px; top: 336px; width: 668px; height: 908px; border-radius: 334px 334px 10px 10px; box-sizing: border-box; border: 26px solid #2b1c14; box-shadow: inset 0 0 0 3px #4a3122, 0 0 80px rgba(0,0,0,.8); }
+      .mullion-v { position: absolute; left: 527px; top: 360px; width: 26px; height: 860px; background: linear-gradient(90deg, #22160f, #4a3122 50%, #22160f); }
+      .mullion-h { position: absolute; left: 230px; top: 760px; width: 620px; height: 24px; background: linear-gradient(#22160f, #4a3122 50%, #22160f); }
+      #s1-sill { position: absolute; left: 180px; top: 1236px; width: 720px; height: 34px; background: linear-gradient(#5b3d2a, #22160f); border-radius: 4px; box-shadow: 0 30px 60px rgba(0,0,0,.7); }
+      .shutter { position: absolute; top: 380px; width: 150px; height: 840px; background: repeating-linear-gradient(#1d130d 0 30px, #2c1d14 30px 34px); }
+      #s1-shutter-l { left: 40px; transform-origin: right center; }
+      #s1-shutter-r { left: 890px; transform-origin: left center; }
+      .ray { position: absolute; mix-blend-mode: screen; filter: blur(26px); }
+      #s1-photo { position: absolute; left: 96px; top: 1000px; width: 470px; height: 340px; background: #e9dcc0; padding: 16px; box-sizing: border-box; box-shadow: 0 30px 70px rgba(0,0,0,.85); }
+      #s1-photo .pic { position: relative; width: 100%; height: 100%; overflow: hidden; filter: sepia(.85) contrast(1.05) brightness(.9); }
+      #s1-photo .pic svg { position: absolute; left: -20px; top: 0; width: 478px; height: 308px; }
+
+      /* ---------- S2 RRÂNJËT ---------- */
+      #s2-flash { background: radial-gradient(circle at 50% 50%, #ffd99a 0%, #c9772f 40%, rgba(60,20,8,0) 75%); opacity: 0; }
+      #s2-inside { opacity: 0; background: radial-gradient(ellipse 60% 40% at 50% 47%, #3a1f12 0%, #170c08 55%, #070404 100%); }
+
+      /* ---------- S3 GJUHA ---------- */
+      #s3-bg { background: radial-gradient(ellipse 80% 50% at 50% 50%, #1a0d0d 0%, #0a0607 60%, #050304 100%); }
+      #s3-thread { position: absolute; left: 0; top: 899px; width: 1080px; height: 3px; background: linear-gradient(90deg, rgba(201,164,92,0), var(--gold-l) 20%, var(--gold-l) 80%, rgba(201,164,92,0)); box-shadow: 0 0 18px 2px rgba(236,212,156,.55); transform-origin: 50% 50%; }
+      #s3-dot { position: absolute; left: 510px; top: 870px; width: 60px; height: 60px; border-radius: 50%; background: radial-gradient(circle, #fff3d6 0%, #ffbf5e 35%, rgba(255,150,60,0) 70%); }
+      #s3-strip { position: absolute; left: 0; top: 0; width: 5400px; height: 1920px; }
+      .city { position: absolute; top: 700px; width: 900px; text-align: center; }
+      .city .reg { font: italic 500 40px/1 "Cormorant", serif; color: var(--gold); letter-spacing: .04em; }
+      .city .name { margin-top: 22px; font: 700 96px/1 "Cinzel", serif; color: var(--white); letter-spacing: .14em; text-shadow: 0 0 30px rgba(236,212,156,.35); }
+      .alpha { position: absolute; font-family: "Cinzel", serif; font-weight: 500; color: var(--gold-l); }
+      .word { position: absolute; left: 0; width: 1080px; text-align: center; font: 700 104px/1 "Cinzel", serif; color: var(--white); letter-spacing: .06em; text-shadow: 0 0 34px rgba(236,212,156,.3); }
+      .word span { display: inline-block; }
+      .word.gold { color: var(--gold-l); }
+
+      /* ---------- S4 TRASHËGIMIA ---------- */
+      #s4-sky { background: linear-gradient(#0d0a14 0%, #3a1220 30%, #8e2a22 52%, #e0913e 66%, #f6cf84 72%); }
+      #s4-sun { position: absolute; left: 290px; top: 1080px; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(255,240,200,.95) 0%, rgba(255,190,100,.55) 25%, rgba(255,140,60,0) 65%); mix-blend-mode: screen; }
+      .eagle { position: absolute; -webkit-mask-image: url("assets/img/eagle-white.png"); mask-image: url("assets/img/eagle-white.png"); -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
+      #s4-eagle { left: 90px; top: 170px; width: 900px; height: 1001px; background: linear-gradient(#ffe2a0, #c9a45c 60%, rgba(201,164,92,0)); mix-blend-mode: screen; }
+
+      /* ---------- S5 FINAL ---------- */
+      #s5-glow { position: absolute; left: -260px; top: 120px; width: 1600px; height: 1300px; background: radial-gradient(ellipse 45% 42% at 50% 45%, rgba(179,22,31,.55) 0%, rgba(90,13,18,.35) 40%, rgba(7,5,6,0) 72%); }
+      #s5-eagle { left: 285px; top: 330px; width: 510px; height: 567px; background: linear-gradient(170deg, #e2343d 0%, #b3161f 45%, #6d0d13 100%); filter: drop-shadow(0 0 40px rgba(220,40,50,.45)); }
+      #s5-sheen { left: 285px; top: 330px; width: 510px; height: 567px; background: linear-gradient(105deg, rgba(255,230,170,0) 35%, rgba(255,230,170,.85) 50%, rgba(255,230,170,0) 65%); background-size: 300% 100%; background-position: 100% 0; mix-blend-mode: screen; }
+      #s5-title { position: absolute; left: 0; top: 1000px; width: 1080px; text-align: center; font: 700 92px/1.12 "Cinzel", serif; color: var(--white); letter-spacing: .07em; }
+      #s5-title .ln { display: block; }
+      #s5-title span { display: inline-block; }
+      #s5-rule { position: absolute; left: 430px; top: 1252px; width: 220px; height: 2px; background: linear-gradient(90deg, rgba(201,164,92,0), var(--gold), rgba(201,164,92,0)); }
+      #s5-logo { position: absolute; left: 470px; top: 1290px; width: 140px; height: 140px; clip-path: circle(48.5%); }
+
+      /* ---------- global overlays ---------- */
+      #dust .mote { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(255,233,190,.95), rgba(255,200,120,0) 70%); }
+      #grain { position: absolute; inset: -64px; opacity: .085; mix-blend-mode: overlay; pointer-events: none; }
+      #vignette { position: absolute; inset: 0; background: radial-gradient(ellipse 75% 60% at 50% 45%, rgba(0,0,0,0) 55%, rgba(0,0,0,.72) 100%); pointer-events: none; }
+      #subs { position: absolute; left: 110px; top: 1395px; width: 860px; height: 130px; }
+      .chunk { position: absolute; left: 0; top: 0; width: 860px; text-align: center; font: 600 50px/1.25 "Inter", sans-serif; color: #fff; text-shadow: 0 2px 14px rgba(0,0,0,.9), 0 0 2px rgba(0,0,0,.9); }
+      .chunk .w { display: inline-block; position: relative; margin: 0 .12em; }
+      .chunk .k { color: var(--gold-l); }
+      .chunk .stroke { position: absolute; left: 0; bottom: -6px; width: 100%; height: 4px; border-radius: 2px; background: var(--red); transform-origin: left center; display: block; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1080" data-height="1920" data-duration="30" data-fps="30">
+      <!-- S1 KUJTESA 0-6 -->
+      <section id="s1" class="clip" data-start="0" data-duration="6.2" data-track-index="1">
+        <div id="s1-wrap" class="wrap">
+          <div id="s1-cam" class="cam">
+            <div id="s1-wall" class="full"></div>
+            <div id="s1-window">
+              <div id="s1-sky" class="full" style="width:620px;height:860px;left:0;top:0;background:linear-gradient(#0b1022 0%, #2b1530 35%, #7a2228 62%, #e08d4c 82%, #f7c98a 92%)"></div>
+              <div id="s1-sunglow" style="position:absolute;left:110px;top:520px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(255,236,190,.9),rgba(255,170,90,0) 65%)"></div>
+              <svg id="s1-mtn" viewBox="0 0 620 860" style="position:absolute;left:-60px;top:0;width:740px;height:860px" preserveAspectRatio="none"></svg>
+            </div>
+            <div class="mullion-v"></div>
+            <div class="mullion-h"></div>
+            <div id="s1-frame"></div>
+            <div id="s1-shutter-l" class="shutter"></div>
+            <div id="s1-shutter-r" class="shutter"></div>
+            <div id="s1-sill"></div>
+            <div id="s1-rays" class="full"></div>
+          </div>
+          <div id="s1-photo"><div class="pic"><svg id="s1-photo-svg" viewBox="0 0 478 308"></svg></div></div>
+        </div>
+      </section>
+
+      <!-- S2 RRÂNJËT 5.2-11.8 -->
+      <section id="s2" class="clip" data-start="5.2" data-duration="6.6" data-track-index="2">
+        <div id="s2-wrap" class="wrap" style="opacity:0">
+          <div id="s2-cam" class="cam">
+            <svg id="s2-land" class="full" viewBox="0 0 1080 1920"></svg>
+          </div>
+          <div id="s2-flash" class="full"></div>
+          <div id="s2-inside" class="full">
+            <div id="s2-icam" class="cam">
+              <svg id="s2-room" class="full" viewBox="0 0 1080 1920"></svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- S3 GJUHA 11-18.6 -->
+      <section id="s3" class="clip" data-start="11" data-duration="7.6" data-track-index="3">
+        <div id="s3-wrap" class="wrap">
+          <div id="s3-bg" class="full"></div>
+          <div id="s3-alphas" class="full"></div>
+          <div id="s3-strip"></div>
+          <div id="s3-thread"></div>
+          <div id="s3-dot"></div>
+          <div id="s3-words" class="full">
+            <div id="w1" class="word" style="top:700px">GJUHA.</div>
+            <div id="w2" class="word gold" style="top:840px">KUJTESA.</div>
+            <div id="w3" class="word" style="top:980px">RRÂNJËT.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- S4 TRASHËGIMIA 17.6-25.6 -->
+      <section id="s4" class="clip" data-start="17.6" data-duration="8" data-track-index="4">
+        <div id="s4-wrap" class="wrap" style="opacity:0">
+          <div id="s4-cam" class="cam">
+            <div id="s4-sky" class="full"></div>
+            <div id="s4-sun"></div>
+            <div id="s4-eagle" class="eagle" style="opacity:0"></div>
+            <svg id="s4-land" class="full" viewBox="0 0 1080 1920"></svg>
+            <div id="s4-rays" class="full"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- S5 MESAZHI FINAL 24.8-30 -->
+      <section id="s5" class="clip" data-start="24.8" data-duration="5.2" data-track-index="5">
+        <div id="s5-wrap" class="wrap">
+          <div id="s5-cam" class="cam">
+            <div id="s5-glow"></div>
+            <div id="s5-eagle" class="eagle"></div>
+            <div id="s5-sheen" class="eagle"></div>
+            <div id="s5-title"><span class="ln"><span>MOS</span> <span>E</span> <span>HARRO</span></span><span class="ln"><span>KUSH</span> <span>JE.</span></span></div>
+            <div id="s5-rule"></div>
+            <img id="s5-logo" src="assets/img/logo.png" alt="Balli Kombëtar për Rininë e Diasporës" />
+          </div>
+        </div>
+      </section>
+
+      <div id="dust" class="full"></div>
+      <div id="vignette"></div>
+      <div id="grain"></div>
+      <div id="subs"></div>
+
+      <audio id="score" src="assets/music/temp-score.wav" data-start="0" data-duration="30" data-track-index="8"></audio>
+    </div>
+
+    <script>
+      // ---------------------------------------------------------------- helpers
+      function rng(a) { return function () { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+      const NS = "http://www.w3.org/2000/svg";
+      const $ = (s) => document.querySelector(s);
+
+      function ridge(seed, x0, x1, base, amp, rough, bottom) {
+        const r = rng(seed), n = 128, ys = new Array(n + 1).fill(0);
+        ys[0] = (r() - 0.5) * amp; ys[n] = (r() - 0.5) * amp;
+        let step = n, sc = amp;
+        while (step > 1) { const h = step / 2; for (let i = h; i < n; i += step) ys[i] = (ys[i - h] + ys[i + h]) / 2 + (r() - 0.5) * sc; sc *= rough; step = h; }
+        let d = `M${x0},${bottom} `;
+        for (let i = 0; i <= n; i++) d += `L${(x0 + ((x1 - x0) * i) / n).toFixed(1)},${(base + ys[i]).toFixed(1)} `;
+        return { fill: d + `L${x1},${bottom} Z`, line: "M" + d.split("L").slice(1).join("L") };
+      }
+
+      // standing figure seen from behind, feet at (x, y), height h
+      function person(x, y, h, o = {}) {
+        const r = h * 0.07, hy = y - h + r, sy = hy + r * 1.55, sw = h * 0.25 * (o.wide || 1);
+        let d = `M${x - sw / 2},${sy + r * 0.9} Q${x - sw / 2},${sy} ${x - sw * 0.22},${sy} L${x + sw * 0.22},${sy} Q${x + sw / 2},${sy} ${x + sw / 2},${sy + r * 0.9} `;
+        d += `L${x + sw * 0.44},${y - h * 0.46} L${x + sw * 0.3},${y - h * 0.46} L${x + sw * 0.26},${y} L${x + sw * 0.04},${y} L${x},${y - h * 0.4} L${x - sw * 0.04},${y} L${x - sw * 0.26},${y} L${x - sw * 0.3},${y - h * 0.46} L${x - sw * 0.44},${y - h * 0.46} Z`;
+        let s = `<path d="${d}"/><rect x="${x - r * 0.45}" y="${hy + r * 0.6}" width="${r * 0.9}" height="${r * 1.2}"/><circle cx="${x}" cy="${hy}" r="${r}"/>`;
+        if (o.plis) s += `<path d="M${x - r * 1.02},${hy - r * 0.25} Q${x - r * 1.0},${hy - r * 1.55} ${x},${hy - r * 1.6} Q${x + r * 1.0},${hy - r * 1.55} ${x + r * 1.02},${hy - r * 0.25} Z" fill="${o.plis}"/>`;
+        if (o.cane) s += `<path d="M${x + sw * 0.46},${y - h * 0.47} L${x + sw * 0.62},${y}" stroke="currentColor" stroke-width="${h * 0.012}" fill="none"/>`;
+        return s;
+      }
+
+      function svgDefs(svg, html) { const d = document.createElementNS(NS, "defs"); d.innerHTML = html; svg.appendChild(d); }
+
+      // ---------------------------------------------------------------- S1 build
+      (function () {
+        const m = $("#s1-mtn");
+        const L = [
+          [11, 600, 120, 0.55, "#4a2a3a", 0.85],
+          [23, 690, 140, 0.5, "#2a1620", 1],
+          [37, 780, 90, 0.5, "#130a0e", 1],
+        ];
+        m.innerHTML = L.map(([s, b, a, rr, c, op], i) => { const p = ridge(s, -40, 660, b, a, rr, 900); return `<g class="s1-m${i}"><path d="${p.fill}" fill="${c}" opacity="${op}"/>${i < 2 ? `<path d="${p.line}" fill="none" stroke="#f3b878" stroke-width="2" opacity=".35"/>` : ""}</g>`; }).join("");
+        // the old photograph: the family in front of the mountains (comes back in S2 and S4)
+        const ps = $("#s1-photo-svg");
+        const r1 = ridge(5, -20, 500, 150, 90, 0.5, 320), r2 = ridge(9, -20, 500, 200, 60, 0.5, 320);
+        ps.innerHTML = `<defs><linearGradient id="pg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9d0bd"/><stop offset="1" stop-color="#a99c86"/></linearGradient></defs>
+          <rect width="478" height="308" fill="url(#pg)"/>
+          <g id="ph-far"><path d="${r1.fill}" fill="#8a7f70"/></g>
+          <g id="ph-mid"><path d="${r2.fill}" fill="#6c6255"/><rect x="330" y="150" width="46" height="62" fill="#4d443b"/><path d="M322,152 L353,128 L384,152 Z" fill="#3a332c"/></g>
+          <g id="ph-fam" fill="#2c2620" color="#2c2620">${person(170, 300, 150, { plis: "#efe7d6", cane: 1 })}${person(232, 300, 160)}${person(286, 300, 96)}</g>`;
+        // volumetric rays from the window into the room
+        const rays = $("#s1-rays");
+        rays.innerHTML = [[-14, 0.5], [-4, 0.38], [8, 0.44], [18, 0.3]].map(([a, o], i) => `<div class="ray s1-ray" style="left:${300 + i * 110}px;top:1180px;width:140px;height:900px;opacity:${o};transform-origin:50% 0;transform:rotate(${a}deg);background:linear-gradient(rgba(255,196,120,.55),rgba(255,160,80,0) 85%)"></div>`).join("");
+      })();
+
+      // ---------------------------------------------------------------- S2 build
+      (function () {
+        const s = $("#s2-land");
+        const far = ridge(41, -300, 1380, 760, 260, 0.52, 1920), mid = ridge(43, -300, 1380, 930, 200, 0.5, 1920), near = ridge(47, -300, 1380, 1120, 120, 0.45, 1920);
+        // stone path, bezier from foreground to the kulla door, with perspective cobbles
+        const P0 = [300, 2000], P1 = [380, 1380], P2 = [700, 1176];
+        const bz = (t) => [(1 - t) * (1 - t) * P0[0] + 2 * (1 - t) * t * P1[0] + t * t * P2[0], (1 - t) * (1 - t) * P0[1] + 2 * (1 - t) * t * P1[1] + t * t * P2[1]];
+        const wd = (t) => 460 * (1 - t) + 26 * t;
+        let lft = [], rgt = [], cob = "";
+        const rr = rng(77);
+        for (let i = 0; i <= 40; i++) { const t = i / 40, [x, y] = bz(t), w = wd(t); lft.push(`${(x - w / 2).toFixed(1)},${y.toFixed(1)}`); rgt.unshift(`${(x + w / 2).toFixed(1)},${y.toFixed(1)}`); }
+        for (let t = 0; t < 0.97; t += 0.012 + 0.03 * Math.pow(1 - 0, 1) * 0) {
+          const [x, y] = bz(t), w = wd(t), n = Math.max(2, Math.round(w / 46));
+          for (let k = 0; k < n; k++) { const cx = x - w / 2 + ((k + 0.5 + (rr() - 0.5) * 0.4) * w) / n; cob += `<ellipse cx="${cx.toFixed(1)}" cy="${y.toFixed(1)}" rx="${(w / n / 2.3).toFixed(1)}" ry="${(w / n / 5.5).toFixed(1)}" fill="${rr() < 0.5 ? "#6e6058" : "#584b44"}" opacity=".9"/>`; }
+        }
+        // kulla: stone tower house
+        let courses = "";
+        for (let y = 1000; y < 1180; y += 14) courses += `<line x1="636" y1="${y}" x2="784" y2="${y}" stroke="#2e2723" stroke-width="1.5" opacity=".6"/>`;
+        s.innerHTML = `<defs>
+            <linearGradient id="s2sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#121a33"/><stop offset=".35" stop-color="#4a2a44"/><stop offset=".55" stop-color="#c0603e"/><stop offset=".66" stop-color="#f3b878"/></linearGradient>
+            <linearGradient id="stone" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9a8572"/><stop offset=".6" stop-color="#6d5d50"/><stop offset="1" stop-color="#3f352f"/></linearGradient>
+            <radialGradient id="win" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffe3a6"/><stop offset=".4" stop-color="#ffb35c" stop-opacity=".8"/><stop offset="1" stop-color="#ff8a3a" stop-opacity="0"/></radialGradient>
+          </defs>
+          <rect width="1080" height="1920" fill="url(#s2sky)"/>
+          <circle cx="300" cy="1230" r="300" fill="url(#win)" opacity=".55"/>
+          <g id="s2-far"><path d="${far.fill}" fill="#5b3a4c"/><path d="${far.line}" stroke="#ffcf96" stroke-width="2" fill="none" opacity=".4"/></g>
+          <g id="s2-mid"><path d="${mid.fill}" fill="#33202a"/><path d="${mid.line}" stroke="#ffbf80" stroke-width="2" fill="none" opacity=".3"/></g>
+          <g id="s2-near"><path d="${near.fill}" fill="#1c1316"/>
+            <g id="kulla">
+              <rect x="630" y="990" width="160" height="196" fill="url(#stone)"/>${courses}
+              <path d="M612,994 L710,936 L808,994 Z" fill="#2a2220"/>
+              <rect x="654" y="1012" width="8" height="24" fill="#1a1412"/><rect x="764" y="1108" width="8" height="24" fill="#1a1412"/><rect x="760" y="1012" width="8" height="24" fill="#1a1412"/>
+              <rect x="700" y="1150" width="22" height="36" fill="#1a1412"/>
+              <rect id="kwin" x="702" y="1062" width="18" height="28" fill="#ffd28a"/>
+              <circle id="kglow" cx="711" cy="1076" r="60" fill="url(#win)" opacity=".8"/>
+            </g>
+            <g opacity=".85"><rect x="470" y="1100" width="90" height="70" fill="#4a3d35"/><path d="M460,1102 L515,1068 L570,1102 Z" fill="#241c1a"/><rect x="505" y="1122" width="12" height="16" fill="#e8a75a"/></g>
+            <polygon points="${lft.join(" ")} ${rgt.join(" ")}" fill="#3d332e"/>${cob}
+          </g>`;
+
+        // interior: grandmother, child, the sofra and the oil lamp
+        const room = $("#s2-room");
+        const gm = (x, y, sc) => `<g transform="translate(${x},${y}) scale(${sc})">
+            <path d="M-120,0 C-125,-120 -95,-210 -40,-235 L30,-235 C70,-215 95,-150 105,-60 L150,-42 C160,-22 160,0 150,0 Z"/>
+            <circle cx="0" cy="-275" r="34"/>
+            <path d="M-42,-300 C-30,-334 32,-334 42,-298 L34,-236 L-60,-205 C-66,-250 -54,-286 -42,-300 Z" fill="#3a2a22"/>
+            <path d="M18,-214 C62,-190 84,-150 104,-118 L90,-106 C66,-140 40,-170 6,-190 Z"/>
+          </g>`;
+        const kid = (x, y, sc) => `<g transform="translate(${x},${y}) scale(${sc})">
+            <path d="M-72,0 C-82,-60 -62,-120 -22,-136 L14,-136 C46,-120 60,-70 66,0 Z"/>
+            <circle cx="-14" cy="-166" r="27"/><path d="M-40,-176 C-34,-200 6,-204 14,-180 L6,-170 C-6,-186 -26,-184 -36,-168 Z"/>
+            <path d="M-30,-110 C-60,-80 -70,-50 -64,-30 L-50,-30 C-50,-56 -40,-80 -20,-100 Z"/>
+          </g>`;
+        room.innerHTML = `<defs>
+            <radialGradient id="lampg" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff2cf"/><stop offset=".18" stop-color="#ffb24f" stop-opacity=".9"/><stop offset=".55" stop-color="#d0601e" stop-opacity=".25"/><stop offset="1" stop-color="#b04010" stop-opacity="0"/></radialGradient>
+            <linearGradient id="winl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a8fb0"/><stop offset="1" stop-color="#d6b38a"/></linearGradient>
+          </defs>
+          <rect x="790" y="470" width="170" height="270" fill="url(#winl)" opacity=".35"/><rect x="868" y="470" width="12" height="270" fill="#170c08"/><rect x="790" y="598" width="170" height="10" fill="#170c08"/>
+          <circle id="lamp-glow" cx="540" cy="880" r="520" fill="url(#lampg)" opacity=".75"/>
+          <g id="rim" fill="#d98a3e" opacity=".9">${gm(306, 1186, 1.12)}${kid(800, 1186, 1.12)}</g>
+          <g id="fam" fill="#0c0705" transform="translate(-4,0)">${gm(306, 1186, 1.12)}</g>
+          <g fill="#0c0705" transform="translate(4,0)">${kid(800, 1186, 1.12)}</g>
+          <rect id="gm-photo" x="404" y="1034" width="56" height="42" fill="#f2e2c0" transform="rotate(-18 432 1055)"/>
+          <ellipse cx="540" cy="1000" rx="190" ry="34" fill="#2a1a10"/><ellipse cx="540" cy="994" rx="190" ry="30" fill="#5a3a22"/><rect x="380" y="1000" width="320" height="70" fill="#1d120b"/>
+          <path d="M524,990 L556,990 L550,940 L530,940 Z" fill="#7a5a3a"/><ellipse cx="540" cy="936" rx="14" ry="5" fill="#3a2a1a"/>
+          <ellipse id="flame" cx="540" cy="908" rx="11" ry="26" fill="#ffe7a8"/>
+          <circle cx="540" cy="908" r="80" fill="url(#lampg)"/>`;
+      })();
+
+      // ---------------------------------------------------------------- S3 build
+      (function () {
+        const strip = $("#s3-strip");
+        const cities = [["Kosovë", "PRISHTINË"], ["Shqipëri", "TIRANË"], ["Maqedoni e Veriut", "SHKUP"], ["Mal i Zi", "ULQIN"], ["Lugina e Preshevës", "PRESHEVË"]];
+        let html = "";
+        cities.forEach(([reg, name], i) => {
+          const cx = 540 + i * 900;
+          html += `<div class="city" style="left:${cx - 450}px"><div class="reg">${reg}</div><div class="name">${name}</div></div>`;
+          // a hill with the lights of the town under the thread
+          const r = rng(100 + i), hill = ridge(200 + i, cx - 520, cx + 520, 1010, 90, 0.5, 1300);
+          let lights = "";
+          for (let k = 0; k < 46; k++) { const lx = cx - 260 + r() * 520, ly = 1000 + r() * 150 + Math.abs(lx - cx) * 0.12; lights += `<circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="${(1.5 + r() * 2.4).toFixed(1)}" fill="${r() < 0.7 ? "#ffcf7a" : "#fff1d0"}" opacity="${(0.4 + r() * 0.6).toFixed(2)}"/>`; }
+          html += `<svg style="position:absolute;left:0;top:0;width:5400px;height:1920px;overflow:visible" viewBox="0 0 5400 1920"><path d="${hill.fill}" fill="#120a0b" opacity=".9"/>${lights}</svg>`;
+        });
+        strip.innerHTML = html;
+        // alphabet in depth
+        const AB = "A B C Ç D DH E Ë F G GJ H I J K L LL M N NJ O P Q R RR S SH T TH U V X XH Y Z ZH".split(" ");
+        const r = rng(9), box = $("#s3-alphas");
+        box.innerHTML = AB.map((l) => { const z = r(), fs = 40 + z * 170; return `<div class="alpha" data-z="${z.toFixed(3)}" style="left:${(40 + r() * 920).toFixed(0)}px;top:${(260 + r() * 1100).toFixed(0)}px;font-size:${fs.toFixed(0)}px;opacity:0;filter:blur(${(z * 7).toFixed(1)}px)">${l}</div>`; }).join("");
+        // split the three words into letters
+        document.querySelectorAll(".word").forEach((w) => { w.innerHTML = [...w.textContent].map((c) => `<span>${c}</span>`).join(""); });
+      })();
+
+      // ---------------------------------------------------------------- S4 build
+      (function () {
+        const s = $("#s4-land");
+        const L = [[61, 1000, 300, "#6a2a2e", ".55"], [63, 1120, 240, "#3c1a20", ".8"], [67, 1240, 160, "#1e0f13", "1"]];
+        let g = L.map(([sd, b, a, c, op], i) => { const p = ridge(sd, -300, 1380, b, a, 0.5, 1920); return `<g class="s4-m${i}"><path d="${p.fill}" fill="${c}" opacity="${op}"/><path d="${p.line}" stroke="#ffc888" stroke-width="2" fill="none" opacity="${0.45 - i * 0.12}"/></g>`; }).join("");
+        // the foreground ridge where three generations stand
+        g += `<g id="s4-front"><path d="M-300,1330 C100,1300 380,1262 540,1262 C700,1262 980,1300 1380,1340 L1380,1920 L-300,1920 Z" fill="#0b0607"/>
+              <path d="M-300,1330 C100,1300 380,1262 540,1262 C700,1262 980,1300 1380,1340" stroke="#ffb46a" stroke-width="3" fill="none" opacity=".55"/>
+              <g fill="#0b0607" color="#0b0607">${person(452, 1268, 250, { plis: "#e9dcc4", cane: 1 })}${person(552, 1266, 270, { wide: 1.05 })}${person(638, 1268, 156)}
+                <path d="M585,1146 L622,1176" stroke="#0b0607" stroke-width="7" stroke-linecap="round"/></g></g>`;
+        s.innerHTML = g;
+        $("#s4-rays").innerHTML = [[-30, 0.35], [-12, 0.45], [6, 0.4], [24, 0.3]].map(([a, o]) => `<div class="ray s4-ray" style="left:470px;top:1240px;width:140px;height:1400px;opacity:${o};transform-origin:50% 0;transform:rotate(${180 + a}deg);background:linear-gradient(rgba(255,214,150,.6),rgba(255,180,100,0) 80%)"></div>`).join("");
+      })();
+
+      // ---------------------------------------------------------------- dust + grain
+      (function () {
+        const r = rng(3), d = $("#dust");
+        let h = "";
+        for (let i = 0; i < 64; i++) { const s = 3 + r() * 9; h += `<div class="mote" style="left:${(r() * 1080).toFixed(0)}px;top:${(r() * 1920).toFixed(0)}px;width:${s.toFixed(1)}px;height:${s.toFixed(1)}px;opacity:${(0.15 + r() * 0.5).toFixed(2)};filter:blur(${(r() * 2.5).toFixed(1)}px)"></div>`; }
+        d.innerHTML = h;
+        const c = document.createElement("canvas"); c.width = c.height = 256;
+        const x = c.getContext("2d"), im = x.createImageData(256, 256), rr = rng(42);
+        for (let i = 0; i < im.data.length; i += 4) { const v = rr() * 255; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 255; }
+        x.putImageData(im, 0, 0);
+        $("#grain").style.backgroundImage = `url(${c.toDataURL()})`;
+      })();
+
+      // ---------------------------------------------------------------- subtitles (word timings: replace with onsets.json once the voice exists)
+      const CUES = [
+        { key: "kurrë", words: [["Ka", 0.8], ["vende", 1.0], ["që", 1.35], ["i", 1.5], ["lamë", 1.62], ["mbrapa…", 1.9]], end: 2.85 },
+        { key: "kurrë", words: [["por", 2.95], ["që", 3.12], ["kurrë", 3.3], ["nuk", 3.75], ["na", 3.95], ["lanë", 4.1], ["neve.", 4.38]], end: 5.3 },
+        { key: "gjyshërve,", words: [["Në", 5.8], ["zânin", 6.0], ["e", 6.35], ["gjyshërve,", 6.5]], end: 7.35 },
+        { key: "nanës,", words: [["në", 7.45], ["fjalët", 7.65], ["e", 7.98], ["nanës,", 8.12]], end: 8.95 },
+        { key: "kujtesa", words: [["jeton", 9.05], ["kujtesa", 9.4], ["jonë.", 9.9]], end: 10.9 },
+        { key: "larg,", words: [["Edhe", 11.5], ["kur", 11.8], ["jeta", 12.0], ["na", 12.35], ["çon", 12.55], ["larg,", 12.85]], end: 14.05 },
+        { key: "gjuha", words: [["gjuha", 14.2], ["na", 14.6], ["e", 14.75], ["kujton", 14.9], ["prej", 15.35], ["kah", 15.6], ["vijmë.", 15.85]], end: 17.2 },
+        { key: "trashëgimia", words: [["Sepse", 18.6], ["trashëgimia", 18.95], ["nuk", 19.6], ["asht", 19.8], ["veç", 20.0], ["ajo", 20.25], ["që", 20.5], ["marrim…", 20.7]], end: 21.8 },
+        { key: "brezave.", words: [["asht", 21.9], ["edhe", 22.15], ["ajo", 22.4], ["që", 22.65], ["ua", 22.85], ["lamë", 23.05], ["brezave.", 23.35]], end: 24.6 },
+        { key: "", words: [["Mos", 26.4], ["e", 26.75], ["harro", 26.95], ["kush", 27.45], ["je.", 27.75]], end: 28.15 },
+      ];
+      (function () {
+        $("#subs").innerHTML = CUES.map((c, i) => `<div class="chunk" id="c${i}">${c.words.map(([w]) => `<span class="w${w === c.key ? " k" : ""}">${w}${w === c.key ? '<i class="stroke"></i>' : ""}</span>`).join(" ")}</div>`).join("");
+      })();
+
+      // ---------------------------------------------------------------- timeline
+      const tl = gsap.timeline({ paused: true });
+
+      // global: dust drifts up through the whole film, grain flickers
+      document.querySelectorAll("#dust .mote").forEach((m, i) => {
+        const r = rng(500 + i);
+        tl.fromTo(m, { y: 0, x: 0 }, { y: -(120 + r() * 260), x: (r() - 0.5) * 140, duration: 30, ease: "none" }, 0);
+      });
+      tl.fromTo("#grain", { x: 0, y: 0 }, { x: 64, y: 48, duration: 30, ease: "steps(240)" }, 0);
+      tl.fromTo("#dust", { opacity: 0 }, { opacity: 1, duration: 2.5, ease: "sine.inOut" }, 0.3);
+
+      // S1 KUJTESA ------------------------------------------------------------
+      tl.fromTo("#s1-wrap", { opacity: 0 }, { opacity: 1, duration: 1.8, ease: "sine.inOut" }, 0);
+      tl.fromTo("#s1-cam", { scale: 1, transformOrigin: "540px 760px" }, { scale: 1.12, duration: 5.2, ease: "none" }, 0);
+      tl.fromTo("#s1-sky", { filter: "brightness(.45)" }, { filter: "brightness(1.05)", duration: 4.5, ease: "sine.inOut" }, 0.2);
+      tl.fromTo("#s1-sunglow", { y: 140, opacity: 0.2 }, { y: 0, opacity: 1, duration: 5, ease: "sine.out" }, 0);
+      tl.fromTo("#s1-mtn .s1-m0", { x: -18 }, { x: 18, duration: 6, ease: "none" }, 0);
+      tl.fromTo("#s1-mtn .s1-m2", { x: 30 }, { x: -30, duration: 6, ease: "none" }, 0);
+      tl.fromTo("#s1-shutter-l", { rotationY: 70, transformPerspective: 1400 }, { rotationY: 40, duration: 4.5, ease: "power2.out" }, 0.2);
+      tl.fromTo("#s1-shutter-r", { rotationY: -70, transformPerspective: 1400 }, { rotationY: -40, duration: 4.5, ease: "power2.out" }, 0.2);
+      tl.fromTo(".s1-ray", { opacity: 0 }, { opacity: (i) => [0.5, 0.38, 0.44, 0.3][i], duration: 2.6, stagger: 0.25, ease: "sine.inOut" }, 0.8);
+      // the family photograph arrives from the camera, out of focus, then settles
+      tl.fromTo("#s1-photo", { y: 320, x: -60, rotation: -14, scale: 1.45, opacity: 0, filter: "blur(16px)" }, { y: 0, x: 0, rotation: -5, scale: 1, opacity: 1, filter: "blur(0px)", duration: 1.6, ease: "power3.out" }, 1.6);
+      tl.to("#s1-photo", { rotation: -3, y: -16, duration: 1.6, ease: "sine.inOut" }, 3.2);
+      tl.fromTo("#ph-far", { x: -8 }, { x: 8, duration: 4, ease: "none" }, 1.6);
+      tl.fromTo("#ph-fam", { x: 10 }, { x: -12, duration: 4, ease: "none" }, 1.6);
+      // push through the window
+      tl.to("#s1-photo", { x: -520, y: 520, scale: 1.9, rotation: -16, filter: "blur(14px)", duration: 1.0, ease: "power2.in" }, 4.9);
+      tl.to("#s1-cam", { scale: 2.7, filter: "blur(6px)", duration: 1.0, ease: "power2.in" }, 5.2);
+      tl.to("#s1-wrap", { opacity: 0, duration: 0.55, ease: "sine.in" }, 5.6);
+
+      // S2 RRÂNJËT ------------------------------------------------------------
+      tl.fromTo("#s2-wrap", { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "sine.out" }, 5.55);
+      tl.fromTo("#s2-cam", { scale: 1.35, y: 80, filter: "blur(8px)", transformOrigin: "711px 1076px" }, { scale: 1.05, y: 0, filter: "blur(0px)", duration: 1.2, ease: "power3.out" }, 5.55);
+      tl.to("#s2-cam", { scale: 1.32, duration: 1.5, ease: "none" }, 6.75);
+      tl.fromTo("#s2-far", { x: 30 }, { x: -20, duration: 3, ease: "none" }, 5.55);
+      tl.fromTo("#s2-mid", { x: 50 }, { x: -40, duration: 3, ease: "none" }, 5.55);
+      tl.fromTo("#kglow", { opacity: 0.5 }, { opacity: 1, duration: 0.4, repeat: 5, yoyo: true, ease: "sine.inOut" }, 5.6);
+      // into the lit window of the kulla
+      tl.to("#s2-cam", { scale: 6.5, duration: 0.9, ease: "power3.in" }, 8.3);
+      tl.fromTo("#s2-flash", { opacity: 0 }, { opacity: 1, duration: 0.45, ease: "sine.in" }, 8.65);
+      tl.fromTo("#s2-inside", { opacity: 0 }, { opacity: 1, duration: 0.01 }, 9.1);
+      tl.to("#s2-flash", { opacity: 0, duration: 0.7, ease: "sine.out" }, 9.1);
+      tl.fromTo("#s2-icam", { scale: 1.12, transformOrigin: "540px 1000px" }, { scale: 1.0, duration: 1.0, ease: "power2.out" }, 9.1);
+      tl.fromTo("#lamp-glow", { opacity: 0.6 }, { opacity: 0.85, duration: 0.23, repeat: 9, yoyo: true, ease: "sine.inOut" }, 9.1);
+      tl.fromTo("#flame", { scaleY: 1, transformOrigin: "540px 934px" }, { scaleY: 1.12, duration: 0.17, repeat: 13, yoyo: true, ease: "sine.inOut" }, 9.1);
+      tl.fromTo("#gm-photo", { fill: "#b9a27a" }, { fill: "#fff1d0", duration: 0.5, ease: "sine.out" }, 9.4);
+      // hand-off: everything sinks into the flame of the lamp, which becomes the thread of S3
+      tl.to("#s2-icam", { scale: 1.9, duration: 1.4, ease: "power2.in" }, 10.2);
+      tl.to("#s2-inside", { opacity: 0, duration: 0.5, ease: "sine.in" }, 11.0);
+
+      // S3 GJUHA --------------------------------------------------------------
+      tl.fromTo("#s3-wrap", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "sine.out" }, 11.0);
+      tl.fromTo("#s3-dot", { scale: 1.6, opacity: 1 }, { scale: 0.4, opacity: 0, duration: 0.6, ease: "power2.in" }, 11.0);
+      tl.fromTo("#s3-thread", { scaleX: 0 }, { scaleX: 1, duration: 0.9, ease: "power3.inOut" }, 11.1);
+      tl.fromTo("#s3-strip", { x: 0, opacity: 0 }, { opacity: 1, duration: 0.5, ease: "sine.out" }, 11.3);
+      [0, 1, 2, 3].forEach((i) => tl.to("#s3-strip", { x: -(i + 1) * 900, duration: 0.55, ease: "power2.inOut" }, 11.95 + i * 0.62));
+      tl.to("#s3-strip", { opacity: 0, filter: "blur(10px)", duration: 0.45, ease: "sine.in" }, 14.05);
+      // the letters of the Albanian alphabet come from depth
+      document.querySelectorAll("#s3-alphas .alpha").forEach((a, i) => {
+        const z = +a.dataset.z;
+        tl.fromTo(a, { opacity: 0, scale: 0.7 }, { opacity: 0.06 + z * 0.22, scale: 1, duration: 0.8, ease: "sine.out" }, 14.0 + (i % 12) * 0.05);
+        tl.to(a, { scale: 1 + z * 0.5, y: (z - 0.5) * 160, duration: 3.6, ease: "none" }, 14.0);
+      });
+      const assemble = (sel, t) => {
+        const r = rng(sel.length * 31 + Math.round(t * 10));
+        document.querySelectorAll(sel + " span").forEach((sp, i) => {
+          tl.fromTo(sp, { x: (r() - 0.5) * 760, y: (r() - 0.5) * 900, rotation: (r() - 0.5) * 70, scale: 2.4, opacity: 0, filter: "blur(16px)" }, { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.85, ease: "power3.out" }, t + i * 0.045);
+        });
+      };
+      assemble("#w1", 14.1);
+      assemble("#w2", 15.25);
+      assemble("#w3", 15.85);
+      tl.to("#s3-thread", { y: 214, duration: 0.6, ease: "power2.inOut" }, 14.0);
+      tl.to("#s3-words", { y: -40, scale: 1.04, duration: 3.2, ease: "none", transformOrigin: "540px 860px" }, 14.4);
+      tl.to("#s3-wrap", { opacity: 0, filter: "blur(8px)", duration: 0.8, ease: "sine.in" }, 17.75);
+
+      // S4 TRASHËGIMIA --------------------------------------------------------
+      tl.fromTo("#s4-wrap", { opacity: 0 }, { opacity: 1, duration: 0.9, ease: "sine.inOut" }, 17.7);
+      tl.fromTo("#s4-cam", { scale: 1.75, transformOrigin: "545px 1150px" }, { scale: 1.0, duration: 6.6, ease: "power1.inOut" }, 17.7);
+      tl.fromTo(".s4-m0", { x: -30 }, { x: 30, duration: 7.4, ease: "none" }, 17.7);
+      tl.fromTo(".s4-m1", { x: -55 }, { x: 55, duration: 7.4, ease: "none" }, 17.7);
+      tl.fromTo("#s4-sun", { y: 60, scale: 0.85 }, { y: -40, scale: 1.1, duration: 7.4, ease: "none" }, 17.7);
+      tl.fromTo(".s4-ray", { opacity: 0 }, { opacity: (i) => [0.35, 0.45, 0.4, 0.3][i], duration: 2, stagger: 0.2, ease: "sine.inOut" }, 19.0);
+      tl.fromTo("#s4-eagle", { opacity: 0, scale: 1.08, y: 30 }, { opacity: 0.15, scale: 1, y: 0, duration: 2.4, ease: "sine.inOut" }, 21.4);
+      tl.fromTo("#s4-sun", { filter: "brightness(1)" }, { filter: "brightness(1.6)", duration: 1.2, ease: "sine.inOut" }, 23.1);
+      tl.to("#s4-wrap", { opacity: 0, duration: 0.7, ease: "sine.in" }, 24.7);
+
+      // S5 MESAZHI FINAL ------------------------------------------------------
+      tl.fromTo("#s5-wrap", { opacity: 1 }, { opacity: 1, duration: 0.01 }, 24.8);
+      tl.fromTo("#s5-cam", { scale: 1.06, transformOrigin: "540px 800px" }, { scale: 1.0, duration: 5.2, ease: "power1.out" }, 24.8);
+      tl.fromTo("#s5-glow", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 2.2, ease: "sine.out" }, 25.3);
+      tl.fromTo("#s5-eagle", { clipPath: "inset(0% 50% 0% 50%)", opacity: 0, y: 24 }, { clipPath: "inset(0% 0% 0% 0%)", opacity: 1, y: 0, duration: 1.7, ease: "power2.inOut" }, 25.6);
+      tl.fromTo("#s5-sheen", { backgroundPosition: "100% 0", opacity: 1 }, { backgroundPosition: "0% 0", duration: 1.4, ease: "sine.inOut" }, 27.0);
+      document.querySelectorAll("#s5-title span span").forEach((sp, i) => {
+        tl.fromTo(sp, { opacity: 0, y: 34, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.7, ease: "power3.out" }, 28.15 + i * 0.13);
+      });
+      tl.fromTo("#s5-rule", { scaleX: 0, opacity: 1 }, { scaleX: 1, duration: 0.7, ease: "power2.out" }, 28.75);
+      tl.fromTo("#s5-logo", { opacity: 0, scale: 0.9 }, { opacity: 0.95, scale: 1, duration: 0.8, ease: "power2.out" }, 28.9);
+      tl.to("#dust", { opacity: 0.5, duration: 1, ease: "sine.inOut" }, 25);
+
+      // subtitles ---------------------------------------------------------------
+      CUES.forEach((c, i) => {
+        const el = document.getElementById("c" + i), ws = el.querySelectorAll(".w");
+        tl.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.01 }, c.words[0][1] - 0.02);
+        ws.forEach((w, j) => {
+          tl.fromTo(w, { opacity: 0, y: 14, filter: "blur(6px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.32, ease: "power2.out" }, c.words[j][1]);
+          const st = w.querySelector(".stroke");
+          if (st) tl.fromTo(st, { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: "power2.out" }, c.words[j][1] + 0.18);
+        });
+        tl.to(el, { opacity: 0, duration: 0.25, ease: "sine.in" }, c.end - 0.25);
+      });
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
