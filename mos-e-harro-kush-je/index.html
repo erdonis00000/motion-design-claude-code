@@ -1,215 +1,336 @@
 <!doctype html>
-<html lang="sq">
+<html lang="sq" data-composition-variables='[{"id":"subtitles","type":"boolean","label":"Burned-in subtitles","default":true}]'>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=1080, height=1920" />
-    <title>Mos e harro kush je</title>
+    <title>Mos e harro kush je · V5</title>
     <script src="assets/js/gsap.min.js"></script>
     <style>
-      @font-face { font-family: "Cinzel"; font-weight: 500; src: url("assets/fonts/Cinzel-500.woff2") format("woff2"); }
       @font-face { font-family: "Cinzel"; font-weight: 700; src: url("assets/fonts/Cinzel-700.woff2") format("woff2"); }
-      @font-face { font-family: "Cormorant"; font-weight: 500; font-style: italic; src: url("assets/fonts/Cormorant-500-italic.woff2") format("woff2"); }
-      @font-face { font-family: "Inter"; font-weight: 500; src: url("assets/fonts/Inter-500.woff2") format("woff2"); }
       @font-face { font-family: "Inter"; font-weight: 600; src: url("assets/fonts/Inter-600.woff2") format("woff2"); }
 
+      /* ---------- charter (V5): palette, type, safe area ----------
+         Safe area for vertical feeds (Reels / Shorts / TikTok): 120 px kept free on the right (action buttons),
+         210 px at the top, 420 px at the bottom (caption and controls). Everything readable lives in
+         x 120 -> 960, y 210 -> 1500. */
       :root {
         --black: #070506;
         --red: #b3161f;
-        --red-deep: #5a0d12;
         --gold: #c9a45c;
         --gold-l: #ecd49c;
         --white: #f5efe4;
+        --safe-l: 120px; --safe-r: 960px; --safe-t: 210px; --safe-b: 1500px;
       }
       body { margin: 0; background: var(--black); }
       #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--black); }
       .clip { position: absolute; inset: 0; overflow: hidden; }
+      .full { position: absolute; inset: 0; }
+      #srcimg { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
 
-      /* ---------- SLIDES : the eight AI stills (ElevenLabs, Seedream 5 Pro, 1152 x 2048) ---------- */
-      #slides { background: var(--black); }
-      .slide { position: absolute; left: -36px; top: -64px; width: 1152px; height: 2048px; opacity: 0; will-change: transform, opacity, filter; }
-      .slide img { display: block; width: 1152px; height: 2048px; }
-      #grade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(40,14,8,.28) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 58%, rgba(7,5,6,.78) 86%, rgba(7,5,6,.9) 100%); pointer-events: none; }
-      #leak { position: absolute; left: -500px; top: -300px; width: 1400px; height: 1400px; border-radius: 50%; background: radial-gradient(circle, rgba(255,196,120,.85) 0%, rgba(230,110,50,.45) 35%, rgba(179,22,31,0) 70%); mix-blend-mode: screen; opacity: 0; filter: blur(20px); }
-      #blackout { position: absolute; inset: 0; background: var(--black); opacity: 1; }
+      /* film: one WebGL canvas carries every shot (2.5D parallax, light, grade, grain) */
+      #film { position: absolute; inset: 0; width: 1080px; height: 1920px; display: block; }
+      #shade { position: absolute; inset: 0; pointer-events: none;
+        background: linear-gradient(180deg, rgba(7,5,6,.35) 0%, rgba(7,5,6,0) 14%, rgba(7,5,6,0) 52%, rgba(7,5,6,.5) 68%, rgba(7,5,6,.62) 78%, rgba(7,5,6,.3) 92%, rgba(7,5,6,.15) 100%); }
 
-      /* ---------- S5 FINAL ---------- */
-      .eagle { position: absolute; -webkit-mask-image: url("assets/img/eagle-white.png"); mask-image: url("assets/img/eagle-white.png"); -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
-      #s5-glow { position: absolute; left: -260px; top: 120px; width: 1600px; height: 1300px; background: radial-gradient(ellipse 45% 42% at 50% 45%, rgba(179,22,31,.55) 0%, rgba(90,13,18,.35) 40%, rgba(7,5,6,0) 72%); }
-      #s5-eagle { left: 285px; top: 330px; width: 510px; height: 567px; background: linear-gradient(170deg, #e2343d 0%, #b3161f 45%, #6d0d13 100%); filter: drop-shadow(0 0 40px rgba(220,40,50,.45)); }
-      #s5-sheen { left: 285px; top: 330px; width: 510px; height: 567px; background: linear-gradient(105deg, rgba(255,230,170,0) 35%, rgba(255,230,170,.85) 50%, rgba(255,230,170,0) 65%); background-size: 300% 100%; background-position: 100% 0; mix-blend-mode: screen; }
-      #s5-title { position: absolute; left: 0; top: 1000px; width: 1080px; text-align: center; font: 700 92px/1.12 "Cinzel", serif; color: var(--white); letter-spacing: .07em; }
-      #s5-title .ln { display: block; }
-      #s5-title span { display: inline-block; }
-      #s5-rule { position: absolute; left: 430px; top: 1252px; width: 220px; height: 2px; background: linear-gradient(90deg, rgba(201,164,92,0), var(--gold), rgba(201,164,92,0)); }
-      #s5-logo { position: absolute; left: 470px; top: 1290px; width: 140px; height: 140px; clip-path: circle(48.5%); }
-
-      /* ---------- global overlays ---------- */
-      #dust .mote { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(255,233,190,.95), rgba(255,200,120,0) 70%); }
-      #grain { position: absolute; inset: -64px; opacity: .085; mix-blend-mode: overlay; pointer-events: none; }
-      #vignette { position: absolute; inset: 0; background: radial-gradient(ellipse 75% 60% at 50% 45%, rgba(0,0,0,0) 55%, rgba(0,0,0,.72) 100%); pointer-events: none; }
-      #subs { position: absolute; left: 110px; top: 1395px; width: 860px; height: 130px; }
-      .chunk { position: absolute; left: 0; top: 0; width: 860px; text-align: center; font: 600 50px/1.25 "Inter", sans-serif; color: #fff; text-shadow: 0 2px 14px rgba(0,0,0,.9), 0 0 2px rgba(0,0,0,.9); }
-      .chunk .w { display: inline-block; position: relative; margin: 0 .12em; }
+      /* subtitles: Inter 600 58 px, block anchored in the safe area, one line of meaning at a time */
+      #subs { position: absolute; left: var(--safe-l); width: 840px; top: 1238px; height: 170px; }
+      .chunk { position: absolute; left: 0; bottom: 0; width: 840px; text-align: center; font: 600 58px/1.28 "Inter", sans-serif; color: #fff; letter-spacing: .005em;
+        text-shadow: 0 2px 18px rgba(0,0,0,.85), 0 0 3px rgba(0,0,0,.9); opacity: 0; }
+      .chunk .w { display: inline-block; margin: 0 .11em; }
       .chunk .k { color: var(--gold-l); }
-      .chunk .stroke { position: absolute; left: 0; bottom: -6px; width: 100%; height: 4px; border-radius: 2px; background: var(--red); transform-origin: left center; display: block; }
+
+      /* signature */
+      #sig-glow { position: absolute; left: -300px; top: 40px; width: 1680px; height: 1400px; opacity: 0;
+        background: radial-gradient(ellipse 42% 40% at 50% 42%, rgba(179,22,31,.50) 0%, rgba(90,13,18,.30) 42%, rgba(7,5,6,0) 72%); }
+      .eagle { position: absolute; -webkit-mask-image: url("assets/img/eagle-white.png"); mask-image: url("assets/img/eagle-white.png"); -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
+      #sig-eagle { left: 305px; top: 300px; width: 470px; height: 523px; background: linear-gradient(170deg, #e2343d 0%, #b3161f 45%, #6d0d13 100%); filter: drop-shadow(0 0 46px rgba(220,40,50,.42)); opacity: 0; }
+      #sig-sheen { left: 305px; top: 300px; width: 470px; height: 523px; background: linear-gradient(105deg, rgba(255,230,170,0) 38%, rgba(255,230,170,.75) 50%, rgba(255,230,170,0) 62%); background-size: 300% 100%; background-position: 100% 0; mix-blend-mode: screen; opacity: 0; }
+      #sig-title { position: absolute; left: var(--safe-l); width: 840px; top: 905px; text-align: center; font: 700 94px/1.14 "Cinzel", serif; color: var(--white); letter-spacing: .06em;
+        text-shadow: 0 0 40px rgba(236,212,156,.18); }
+      #sig-title .ln { display: block; white-space: nowrap; }
+      #sig-title .tw { display: inline-block; opacity: 0; }
+      #sig-rule { position: absolute; left: 420px; top: 1150px; width: 240px; height: 2px; background: linear-gradient(90deg, rgba(201,164,92,0), var(--gold), rgba(201,164,92,0)); }
+      #sig-logo-wrap { position: absolute; left: 415px; top: 1205px; width: 250px; height: 250px; opacity: 0; }
+      #sig-logo { position: absolute; inset: 0; width: 250px; height: 250px; clip-path: circle(49.4% at 50% 50%); }
+      #sig-ring { position: absolute; left: -9px; top: -9px; width: 268px; height: 268px; overflow: visible; }
     </style>
   </head>
   <body>
     <div id="root" data-composition-id="main" data-start="0" data-width="1080" data-height="1920" data-duration="30" data-fps="30">
-      <!-- SLIDES 0-24.85: eight stills, Ken Burns, cross-dissolves, light leaks -->
-      <section id="slides" class="clip" data-start="0" data-duration="24.85" data-track-index="1">
-        <div id="slide-stack" class="full"></div>
-        <div id="leak"></div>
-        <div id="grade"></div>
-        <div id="blackout"></div>
+      <div id="srcimg">
+        <img id="im0" src="assets/img/ia/01-fenetre.jpg" alt="" /><img id="dp0" src="assets/img/ia/depth/01-fenetre.png" alt="" />
+        <img id="im1" src="assets/img/ia/02-photo.jpg" alt="" /><img id="dp1" src="assets/img/ia/depth/02-photo.png" alt="" />
+        <img id="im2" src="assets/img/ia/03-kulla.jpg" alt="" /><img id="dp2" src="assets/img/ia/depth/03-kulla.png" alt="" />
+      </div>
+
+      <section id="filmclip" class="clip" data-start="0" data-duration="30" data-track-index="1">
+        <canvas id="film" width="1080" height="1920"></canvas>
+        <div id="shade"></div>
       </section>
 
-      <!-- S5 MESAZHI FINAL 24.8-30 -->
-      <section id="s5" class="clip" data-start="24.8" data-duration="5.2" data-track-index="5">
-        <div id="s5-wrap" class="wrap">
-          <div id="s5-cam" class="cam">
-            <div id="s5-glow"></div>
-            <div id="s5-eagle" class="eagle"></div>
-            <div id="s5-sheen" class="eagle"></div>
-            <div id="s5-title"><span class="ln"><span>MOS</span> <span>E</span> <span>HARRO</span></span><span class="ln"><span>KUSH</span> <span>JE.</span></span></div>
-            <div id="s5-rule"></div>
-            <img id="s5-logo" src="assets/img/logo.png" alt="Balli Kombëtar për Rininë e Diasporës" />
-          </div>
+      <section id="sig" class="clip" data-start="24.6" data-duration="5.4" data-track-index="2">
+        <div id="sig-glow"></div>
+        <div id="sig-eagle" class="eagle"></div>
+        <div id="sig-sheen" class="eagle"></div>
+        <div id="sig-title"><span class="ln"><span class="tw">MOS</span> <span class="tw">E</span> <span class="tw">HARRO</span></span><span class="ln"><span class="tw">KUSH</span> <span class="tw">JE.</span></span></div>
+        <div id="sig-rule"></div>
+        <div id="sig-logo-wrap">
+          <img id="sig-logo" src="assets/img/logo.png" alt="Balli Kombëtar për Rininë e Diasporës" />
+          <svg id="sig-ring" viewBox="0 0 268 268"><circle id="sig-ring-c" cx="134" cy="134" r="131" fill="none" stroke="#c9a45c" stroke-width="1.6" stroke-dasharray="823.1" stroke-dashoffset="823.1" transform="rotate(-90 134 134)" /></svg>
         </div>
       </section>
 
-      <div id="dust" class="full"></div>
-      <div id="vignette"></div>
-      <div id="grain"></div>
       <div id="subs"></div>
 
-      <audio id="score" src="assets/music/score.wav" data-start="0" data-duration="30" data-volume="0.5" data-track-index="8"></audio>
-      <audio id="voix" src="assets/audio/voix-montage.wav" data-start="0" data-duration="30" data-track-index="9"></audio>
+      <audio id="mix" src="assets/audio/mix.wav" data-start="0" data-duration="30" data-track-index="9"></audio>
     </div>
 
     <script>
       window.__timelines = window.__timelines || {};
-      // ---------------------------------------------------------------- helpers
-      function rng(a) { return function () { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
       const $ = (s) => document.querySelector(s);
+      const VARS = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+      const SUBTITLES = VARS.subtitles !== false;
 
-      // ---------------------------------------------------------------- slides
-      // One still per idea of the voice. t0: the dissolve in starts; t1: the slide is gone (the next one covers it).
-      // o: focus point of the Ken Burns (transform-origin, % of the still); s, x, y: scale and drift from -> to.
-      // A slide whose `stand` is set shows a reframed detail of a still already generated, until its own still exists
-      // (the ElevenLabs free plan stopped after three stills on 2026-10-21): delete `stand` once the file is in assets/img/ia/.
-      const XF = 0.7;
-      const SLIDES = [
-        { src: "01-fenetre.jpg", t0: 0.0, t1: 3.3, o: "50% 30%", s: [1.0, 1.14], x: [0, 0], y: [30, -10] },
-        { src: "02-photo.jpg", t0: 2.6, t1: 5.9, o: "50% 31%", s: [1.32, 1.08], x: [-20, 10], y: [0, 0] },
-        { src: "03-kulla.jpg", t0: 5.2, t1: 7.7, o: "62% 20%", s: [1.05, 1.2], x: [30, -20], y: [0, 0] },
-        { src: "04-gjyshja.jpg", t0: 7.0, t1: 11.9, o: "50% 40%", s: [1.2, 1.04], x: [0, 0], y: [-30, 20],
-          stand: { src: "02-photo.jpg", o: "46% 26%", s: [1.9, 2.25], x: [20, -20], y: [0, 0] } },
-        { src: "05-qyteti.jpg", t0: 11.2, t1: 14.4, o: "50% 35%", s: [1.18, 1.04], x: [40, -40], y: [0, 0],
-          stand: { src: "03-kulla.jpg", o: "96% 22%", s: [1.75, 1.35], x: [-30, 0], y: [0, 0] } },
-        { src: "06-fletorja.jpg", t0: 13.7, t1: 18.9, o: "50% 38%", s: [1.04, 1.22], x: [0, 0], y: [20, -20],
-          stand: { src: "01-fenetre.jpg", o: "50% 30%", s: [1.75, 2.05], x: [0, 0], y: [0, 0] } },
-        { src: "07-brezat.jpg", t0: 18.2, t1: 21.9, o: "50% 45%", s: [1.22, 1.05], x: [0, 0], y: [40, 0],
-          stand: { src: "03-kulla.jpg", o: "70% 88%", s: [1.35, 1.1], x: [0, 0], y: [40, -20] } },
-        { src: "08-alpet.jpg", t0: 21.2, t1: 24.85, o: "50% 30%", s: [1.04, 1.24], x: [0, 0], y: [0, -40],
-          stand: { src: "01-fenetre.jpg", o: "50% 27%", s: [2.1, 3.1], x: [0, 0], y: [0, 0] } },
+      // ================================================================ SHOTS (all times in film seconds)
+      // img: 0 window, 1 family photograph, 2 kulla. Keyframes: t, cx/cy (centre of the frame on the still, 0..1),
+      // z (zoom, 1 = the still fills the frame), px/py (camera translation: parallax by depth), k (dolly: near planes
+      // grow faster than far ones), f (depth that stays still), ex (exposure), ry (light-ray strength), lx/ly (light
+      // source on screen). Each keyframe also names the ease INTO it. Shots overlap during their transition.
+      const SHOTS = [
+        { id: "A-fenetre", img: 0, t0: 0.0, t1: 6.05, keys: [
+          { t: 0.0, cx: 0.52, cy: 0.47, z: 1.06, px: -0.016, py: 0, k: 0, f: 0.6, ex: 0.82, ry: 0.65, lx: 0.53, ly: 0.43 },
+          { t: 0.7, ex: 1.0, ease: "sine.out" },
+          { t: 3.1, cx: 0.535, cy: 0.445, z: 1.42, px: 0.004, k: 0.12, ry: 0.75, ease: "sine.inOut" },
+          { t: 6.05, cx: 0.54, cy: 0.43, z: 2.05, px: 0.014, k: 0.28, ex: 1.12, ry: 0.95, lx: 0.54, ly: 0.42, ease: "power2.in" } ] },
+        { id: "C-photo", img: 1, t0: 5.45, t1: 11.75, keys: [
+          { t: 5.45, cx: 0.53, cy: 0.49, z: 1.16, px: 0.010, py: -0.004, k: 0.05, f: 0.86, ex: 1.05, ry: 0.45, lx: 0.95, ly: 0.04 },
+          { t: 7.25, cx: 0.605, cy: 0.445, z: 1.72, px: 0.004, k: 0.02, ex: 1.0, ease: "power2.out" },
+          { t: 9.05, cx: 0.39, cy: 0.455, z: 2.12, px: -0.004, ry: 0.55, lx: 0.75, ly: 0.02, ease: "sine.inOut" },
+          { t: 11.75, cx: 0.45, cy: 0.49, z: 2.26, px: -0.008, ex: 1.12, ry: 0.70, lx: 0.55, ly: 0.0, ease: "sine.inOut" } ] },
+        { id: "E-kulla", img: 2, t0: 10.95, t1: 18.35, keys: [
+          { t: 10.95, cx: 0.53, cy: 0.66, z: 1.52, px: 0.006, py: 0.004, k: -0.10, f: 0.55, ex: 1.0, ry: 0.25, lx: 0.98, ly: 0.12 },
+          { t: 14.2, cx: 0.52, cy: 0.64, z: 1.30, px: -0.004, py: 0, k: -0.02, ease: "sine.out" },
+          { t: 16.45, cx: 0.47, cy: 0.33, z: 1.38, px: -0.008, k: 0.04, f: 0.42, ry: 0.35, ease: "power2.inOut" },
+          { t: 18.35, cx: 0.37, cy: 0.305, z: 2.15, px: -0.004, k: 0.14, ex: 0.96, ry: 0.30, ease: "sine.in" } ] },
+        { id: "G-photo", img: 1, t0: 17.75, t1: 21.95, keys: [
+          { t: 17.75, cx: 0.66, cy: 0.41, z: 2.40, px: 0.004, py: 0, k: 0, f: 0.86, ex: 0.98, ry: 0.40, lx: 0.9, ly: 0.0 },
+          { t: 21.95, cx: 0.465, cy: 0.495, z: 2.25, px: -0.006, ex: 1.06, ry: 0.55, lx: 0.6, ly: 0.0, ease: "sine.inOut" } ] },
+        { id: "H-kulla", img: 2, t0: 21.35, t1: 25.2, keys: [
+          { t: 21.35, cx: 0.50, cy: 0.66, z: 1.24, px: 0.0, py: 0.006, k: 0.0, f: 0.5, ex: 1.0, ry: 0.35, lx: 0.95, ly: 0.10 },
+          { t: 23.6, cx: 0.56, cy: 0.40, z: 1.34, px: 0.004, py: -0.004, k: 0.06, ex: 1.10, ry: 0.7, lx: 0.88, ly: 0.06, ease: "sine.inOut" },
+          { t: 25.2, cx: 0.62, cy: 0.24, z: 1.50, px: 0.008, py: -0.008, k: 0.10, ex: 1.26, ry: 1.0, lx: 0.85, ly: 0.04, ease: "sine.out" } ] },
+        { id: "S-echo", img: 0, t0: 24.85, t1: 30.0, keys: [
+          { t: 24.85, cx: 0.53, cy: 0.42, z: 1.55, px: 0.0, py: 0, k: 0, f: 0.3, ex: 0.0, ry: 0.0, lx: 0.54, ly: 0.42, sat: 0.35 },
+          { t: 26.0, ex: 0.20, ease: "sine.inOut" },
+          { t: 30.0, z: 1.42, ex: 0.24, px: 0.006, ease: "none" } ] },
       ];
-      (function () {
-        $("#slide-stack").innerHTML = SLIDES.map((sl, i) => `<div class="slide" id="sl${i}"><img src="assets/img/ia/${(sl.stand || sl).src}" alt="" /></div>`).join("");
-      })();
-
-      // ---------------------------------------------------------------- dust + grain
-      (function () {
-        const r = rng(3), d = $("#dust");
-        let h = "";
-        for (let i = 0; i < 64; i++) { const s = 3 + r() * 9; h += `<div class="mote" style="left:${(r() * 1080).toFixed(0)}px;top:${(r() * 1920).toFixed(0)}px;width:${s.toFixed(1)}px;height:${s.toFixed(1)}px;opacity:${(0.15 + r() * 0.5).toFixed(2)};filter:blur(${(r() * 2.5).toFixed(1)}px)"></div>`; }
-        d.innerHTML = h;
-        const c = document.createElement("canvas"); c.width = c.height = 256;
-        const x = c.getContext("2d"), im = x.createImageData(256, 256), rr = rng(42);
-        for (let i = 0; i < im.data.length; i += 4) { const v = rr() * 255; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 255; }
-        x.putImageData(im, 0, 0);
-        $("#grain").style.backgroundImage = `url(${c.toDataURL()})`;
-      })();
-
-      // ---------------------------------------------------------------- subtitles (word timings from build-voice.py -> cues.json)
-      const CUES = [
-        {key: "kurrë", words: [["Ka", 0.8], ["vende", 1.01], ["që", 1.36], ["i", 1.56], ["lamë", 1.77], ["mbrapa…", 2.12]], end: 2.92},
-        {key: "kurrë", words: [["por", 2.99], ["që", 3.12], ["kurrë", 3.39], ["nuk", 3.7], ["na", 3.89], ["lanë", 4.07], ["neve.", 4.39]], end: 5.15},
-        {key: "gjyshërve,", words: [["Në", 5.8], ["zânin", 6.01], ["e", 6.36], ["gjyshërve,", 6.57]], end: 7.22},
-        {key: "nanës,", words: [["në", 7.27], ["fjalët", 7.49], ["e", 7.86], ["nanës,", 8.08]], end: 8.57},
-        {key: "kujtesa", words: [["jeton", 8.62], ["kujtesa", 8.98], ["jonë.", 9.5]], end: 10.31},
-        {key: "larg,", words: [["Edhe", 12.36], ["kur", 12.71], ["jeta", 12.92], ["na", 13.27], ["çon", 13.47], ["larg,", 13.68]], end: 14.15},
-        {key: "gjuha", words: [["gjuha", 14.2], ["na", 14.57], ["e", 14.79], ["kujton", 15.01], ["prej", 15.39], ["kah", 15.61], ["vijmë.", 15.82]], end: 16.65},
-        {key: "trashëgimia", words: [["Sepse", 18.6], ["trashëgimia", 18.92], ["nuk", 19.63], ["asht", 19.81], ["veç", 20.0], ["ajo", 20.18], ["që", 20.5], ["marrim…", 20.68]], end: 21.41},
-        {key: "brezave.", words: [["asht", 21.46], ["edhe", 21.65], ["ajo", 21.96], ["që", 22.28], ["ua", 22.47], ["lamë", 22.78], ["brezave.", 23.1]], end: 24.0},
-        {key: "", words: [["Mos", 26.6], ["e", 26.79], ["harro", 26.98], ["kush", 27.31], ["je.", 27.5]], end: 28.14},
+      // transitions: shot a -> shot b over [t0, t1]; "light" opens on the highlights of b, "dissolve" is a plain mix
+      const CUTS = [
+        { a: 0, b: 1, t0: 5.45, t1: 6.05, type: "light" },
+        { a: 1, b: 2, t0: 10.95, t1: 11.75, type: "light" },
+        { a: 2, b: 3, t0: 17.75, t1: 18.35, type: "dissolve" },
+        { a: 3, b: 4, t0: 21.35, t1: 21.95, type: "dissolve" },
+        { a: 4, b: 5, t0: 24.85, t1: 25.2, type: "dissolve" },
       ];
-      (function () {
-        $("#subs").innerHTML = CUES.map((c, i) => `<div class="chunk" id="c${i}">${c.words.map(([w]) => `<span class="w${w === c.key ? " k" : ""}">${w}${w === c.key ? '<i class="stroke"></i>' : ""}</span>`).join(" ")}</div>`).join("");
-      })();
-      (function () {
-        $("#subs").innerHTML = CUES.map((c, i) => `<div class="chunk" id="c${i}">${c.words.map(([w]) => `<span class="w${w === c.key ? " k" : ""}">${w}${w === c.key ? '<i class="stroke"></i>' : ""}</span>`).join(" ")}</div>`).join("");
-      })();
 
-      // ---------------------------------------------------------------- timeline
-      const tl = gsap.timeline({ paused: true });
-
-      // global: dust drifts up through the whole film, grain flickers
-      document.querySelectorAll("#dust .mote").forEach((m, i) => {
-        const r = rng(500 + i);
-        tl.fromTo(m, { y: 0, x: 0 }, { y: -(120 + r() * 260), x: (r() - 0.5) * 140, duration: 30, ease: "none" }, 0);
+      // ================================================================ easing + keyframe evaluation (deterministic)
+      const EASE = {
+        none: (x) => x,
+        "sine.in": (x) => 1 - Math.cos((x * Math.PI) / 2),
+        "sine.out": (x) => Math.sin((x * Math.PI) / 2),
+        "sine.inOut": (x) => -(Math.cos(Math.PI * x) - 1) / 2,
+        "power2.in": (x) => x * x,
+        "power2.out": (x) => 1 - (1 - x) * (1 - x),
+        "power2.inOut": (x) => (x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2),
+      };
+      const PROPS = ["cx", "cy", "z", "px", "py", "k", "f", "ex", "ry", "lx", "ly", "sat"];
+      SHOTS.forEach((s) => {
+        let prev = { sat: 1 };
+        s.keys = s.keys.map((k) => (prev = Object.assign({}, prev, k)));
       });
-      tl.fromTo("#grain", { x: 0, y: 0 }, { x: 64, y: 48, duration: 30, ease: "steps(240)" }, 0);
-      tl.fromTo("#dust", { opacity: 0 }, { opacity: 1, duration: 2.5, ease: "sine.inOut" }, 0.3);
-
-      // SLIDES ----------------------------------------------------------------
-      tl.fromTo("#blackout", { opacity: 1 }, { opacity: 0, duration: 1.4, ease: "sine.inOut" }, 0);
-      SLIDES.forEach((sl, i) => {
-        const m = sl.stand || sl, el = "#sl" + i, d = sl.t1 - sl.t0, first = i === 0;
-        // the camera never stops: one slow move over the whole life of the slide
-        tl.fromTo(el, { scale: m.s[0], x: m.x[0], y: m.y[0], rotation: i % 2 ? -0.6 : 0.6, transformOrigin: m.o },
-          { scale: m.s[1], x: m.x[1], y: m.y[1], rotation: 0, duration: d, ease: "sine.inOut" }, sl.t0);
-        // dissolve in from a soft, over-exposed blur, the previous still stays under it
-        tl.fromTo(el, { opacity: first ? 1 : 0, filter: first ? "blur(0px) brightness(1)" : "blur(14px) brightness(1.35)" },
-          { opacity: 1, filter: "blur(0px) brightness(1)", duration: first ? 0.01 : XF, ease: "power2.out" }, sl.t0);
-        // a warm light leak sweeps across every dissolve
-        if (!first) {
-          const r = rng(70 + i), fromLeft = i % 2 === 1;
-          tl.fromTo("#leak", { x: fromLeft ? -300 : 700, y: (r() - 0.5) * 900, opacity: 0, scale: 0.8 },
-            { x: fromLeft ? 700 : -300, y: (r() - 0.5) * 900, opacity: 0.55, scale: 1.15, duration: XF, ease: "sine.in" }, sl.t0 - 0.15);
-          tl.to("#leak", { opacity: 0, duration: 0.6, ease: "sine.out" }, sl.t0 - 0.15 + XF);
+      function camAt(s, t) {
+        const ks = s.keys;
+        if (t <= ks[0].t) return ks[0];
+        for (let i = 1; i < ks.length; i++) {
+          if (t <= ks[i].t) {
+            const a = ks[i - 1], b = ks[i], e = EASE[b.ease || "sine.inOut"]((t - a.t) / (b.t - a.t)), o = {};
+            PROPS.forEach((p) => (o[p] = a[p] + (b[p] - a[p]) * e));
+            return clampCam(o);
+          }
         }
-      });
-      // climax: the last still burns brighter until the hard cut to black at 24.85 (the music stops dead there)
-      tl.to("#sl7", { filter: "blur(0px) brightness(1.3) saturate(1.15)", duration: 1.8, ease: "sine.in" }, 23.0);
-      tl.fromTo("#leak", { x: 200, y: -200, opacity: 0, scale: 0.9 }, { opacity: 0.6, scale: 1.3, duration: 1.8, ease: "sine.in" }, 23.0);
+        return clampCam(ks[ks.length - 1]);
+      }
+      // keep the frame (plus parallax margin) inside the still
+      function clampCam(c) {
+        const o = Object.assign({}, c), h = 0.5 / o.z, m = 0.012 + Math.abs(o.px) + Math.abs(o.py);
+        o.cx = Math.min(1 - h - m, Math.max(h + m, o.cx));
+        o.cy = Math.min(1 - h - m, Math.max(h + m, o.cy));
+        return o;
+      }
 
-      // S5 MESAZHI FINAL ------------------------------------------------------
-      tl.fromTo("#s5-wrap", { opacity: 1 }, { opacity: 1, duration: 0.01 }, 24.8);
-      tl.fromTo("#s5-cam", { scale: 1.06, transformOrigin: "540px 800px" }, { scale: 1.0, duration: 5.2, ease: "power1.out" }, 24.8);
-      tl.fromTo("#s5-glow", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 2.2, ease: "sine.out" }, 25.3);
-      tl.fromTo("#s5-eagle", { clipPath: "inset(0% 50% 0% 50%)", opacity: 0, y: 24 }, { clipPath: "inset(0% 0% 0% 0%)", opacity: 1, y: 0, duration: 1.7, ease: "power2.inOut" }, 25.6);
-      tl.fromTo("#s5-sheen", { backgroundPosition: "100% 0", opacity: 1 }, { backgroundPosition: "0% 0", duration: 1.4, ease: "sine.inOut" }, 27.0);
-      document.querySelectorAll("#s5-title span span").forEach((sp, i) => {
-        tl.fromTo(sp, { opacity: 0, y: 34, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.7, ease: "power3.out" }, 28.15 + i * 0.13);
-      });
-      tl.fromTo("#s5-rule", { scaleX: 0, opacity: 1 }, { scaleX: 1, duration: 0.7, ease: "power2.out" }, 28.75);
-      tl.fromTo("#s5-logo", { opacity: 0, scale: 0.9 }, { opacity: 0.95, scale: 1, duration: 0.8, ease: "power2.out" }, 28.9);
-      tl.to("#dust", { opacity: 0.5, duration: 1, ease: "sine.inOut" }, 25);
+      // ================================================================ WebGL2 renderer
+      const canvas = $("#film");
+      const gl = canvas.getContext("webgl2", { alpha: false, antialias: false, preserveDrawingBuffer: true });
+      const VS = `#version 300 es
+        in vec2 p; out vec2 uv;
+        void main() { uv = vec2(p.x * 0.5 + 0.5, 0.5 - p.y * 0.5); gl_Position = vec4(p, 0.0, 1.0); }`;
+      const FS = `#version 300 es
+        precision highp float;
+        in vec2 uv; out vec4 o;
+        uniform sampler2D imA, dpA, imB, dpB;
+        uniform vec4 camA, camB;      // cx, cy, zoom, dolly
+        uniform vec4 offA, offB;      // px, py, focus depth, exposure
+        uniform vec4 litA, litB;      // light x, y, ray strength, saturation
+        uniform float mixAB, lightCut, frame;
+        float luma(vec3 c) { return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
+        vec2 parallax(sampler2D dp, vec4 cam, vec4 off, vec2 uv) {
+          vec2 p = cam.xy + (uv - 0.5) / cam.z, q = p;
+          for (int i = 0; i < 5; i++) {
+            float d = texture(dp, q).r - off.z;
+            q = p - off.xy * d - (p - cam.xy) * cam.w * d;
+          }
+          return q;
+        }
+        vec3 shot(sampler2D im, sampler2D dp, vec4 cam, vec4 off, vec4 lit) {
+          vec2 q = parallax(dp, cam, off, uv);
+          vec3 c = texture(im, q).rgb;
+          // light rays: highlights of the still smeared toward the light source, in screen space
+          if (lit.z > 0.001) {
+            vec2 st = (lit.xy - uv) / 22.0, s = uv; float w = 1.0; vec3 acc = vec3(0.0);
+            for (int i = 0; i < 22; i++) {
+              s += st;
+              vec3 h = texture(im, cam.xy + (s - 0.5) / cam.z).rgb;
+              acc += max(h - 0.62, 0.0) * w; w *= 0.93;
+            }
+            c += acc * vec3(1.0, 0.82, 0.58) * lit.z * 0.11;
+          }
+          c *= off.w;
+          float l = luma(c);
+          c = mix(vec3(l), c, lit.w);
+          return c;
+        }
+        vec3 shoulder(vec3 x) {                      // highlights roll off toward 1.0, never clip
+          vec3 k = step(0.78, x);
+          return mix(x, 0.78 + 0.22 * (1.0 - exp(-(x - 0.78) / 0.22)), k);
+        }
+        float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+        void main() {
+          vec3 a = shot(imA, dpA, camA, offA, litA);
+          vec3 c = a;
+          if (mixAB > 0.0) {
+            vec3 b = shot(imB, dpB, camB, offB, litB);
+            float m = mixAB;
+            if (lightCut > 0.5) {                    // through a warm veil of light: a brightens, b comes out of it
+              float v = pow(sin(3.14159 * mixAB), 1.4);
+              c = mix(a, b, smoothstep(0.35, 0.65, mixAB)) + v * vec3(0.62, 0.50, 0.36);
+            } else {
+              c = mix(a, b, m);
+            }
+          }
+          // grade: warm, slightly desaturated, deep but open blacks, soft highlights
+          c = c * vec3(1.03, 1.0, 0.95);
+          float l = luma(c);
+          c = mix(vec3(l), c, 0.9);
+          c = 0.012 + c * 0.988;
+          c = shoulder(c);
+          // vignette
+          vec2 v = (uv - vec2(0.5, 0.46)) * vec2(1.0, 0.78);
+          c *= 1.0 - 0.42 * smoothstep(0.18, 0.72, length(v));
+          // film grain, one pattern per frame, stronger in the mid-tones
+          float g = hash(floor(uv * vec2(1080.0, 1920.0)) + frame * 17.31) + hash(floor(uv * vec2(540.0, 960.0)) + frame * 3.7) - 1.0;
+          c += g * 0.035 * (1.0 - abs(luma(c) - 0.45) * 1.4);
+          o = vec4(clamp(c, 0.0, 1.0), 1.0);
+        }`;
+      function sh(type, src) {
+        const s = gl.createShader(type);
+        gl.shaderSource(s, src); gl.compileShader(s);
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+        return s;
+      }
+      const prog = gl.createProgram();
+      gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS));
+      gl.linkProgram(prog); gl.useProgram(prog);
+      const buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+      const loc = gl.getAttribLocation(prog, "p");
+      gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+      const U = {};
+      ["imA", "dpA", "imB", "dpB", "camA", "camB", "offA", "offB", "litA", "litB", "mixAB", "lightCut", "frame"].forEach((n) => (U[n] = gl.getUniformLocation(prog, n)));
+      const TEX = {};
+      function tex(id) {
+        if (TEX[id]) return TEX[id];
+        const el = document.getElementById(id);
+        if (!el.complete || !el.naturalWidth) return null;
+        const t = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, t);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, el);
+        gl.generateMipmap(gl.TEXTURE_2D);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        return (TEX[id] = t);
+      }
+      function bindShot(slot, s, t) {
+        const c = camAt(s, t), sfx = slot === 0 ? "A" : "B";
+        const im = tex("im" + s.img), dp = tex("dp" + s.img);
+        if (!im || !dp) return false;
+        gl.activeTexture(gl.TEXTURE0 + slot * 2); gl.bindTexture(gl.TEXTURE_2D, im); gl.uniform1i(U["im" + sfx], slot * 2);
+        gl.activeTexture(gl.TEXTURE1 + slot * 2); gl.bindTexture(gl.TEXTURE_2D, dp); gl.uniform1i(U["dp" + sfx], slot * 2 + 1);
+        gl.uniform4f(U["cam" + sfx], c.cx, c.cy, c.z, c.k);
+        gl.uniform4f(U["off" + sfx], c.px, c.py, c.f, c.ex);
+        gl.uniform4f(U["lit" + sfx], c.lx, c.ly, c.ry, c.sat);
+        return true;
+      }
+      function renderFilm(t) {
+        gl.viewport(0, 0, 1080, 1920);
+        let cut = CUTS.find((c) => t >= c.t0 && t < c.t1), a, b = null, m = 0;
+        if (cut) { a = SHOTS[cut.a]; b = SHOTS[cut.b]; m = (t - cut.t0) / (cut.t1 - cut.t0); m = m * m * (3 - 2 * m); }
+        else a = SHOTS.find((s) => t >= s.t0 && t < s.t1) || SHOTS[SHOTS.length - 1];
+        if (!bindShot(0, a, t)) return;
+        if (b && !bindShot(1, b, t)) return;
+        if (!b) bindShot(1, a, t);
+        gl.uniform1f(U.mixAB, b ? m : 0);
+        gl.uniform1f(U.lightCut, cut && cut.type === "light" ? 1 : 0);
+        gl.uniform1f(U.frame, Math.round(t * 30));
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      }
+      window.addEventListener("hf-seek", (e) => renderFilm(e.detail.time));
 
-      // subtitles ---------------------------------------------------------------
-      CUES.forEach((c, i) => {
+      // ================================================================ subtitles (word cues: build-cues.py -> cues-v5.json)
+      const CUES = [{"key":"","words":[["Ka",0.8],["vende",1.0],["që",1.36],["i",1.62],["lamë",1.9],["mbrapa…",2.15]],"end":2.92},{"key":"kurrë","words":[["por",2.99],["që",3.25],["kurrë",3.37],["nuk",3.67],["na",3.82],["lanë",4.06],["neve.",4.51]],"end":5.15},{"key":"gjyshërve,","words":[["Në",5.8],["zânin",5.98],["e",6.44],["gjyshërve,",6.7]],"end":7.22},{"key":"nanës,","words":[["në",7.27],["fjalët",7.41],["e",7.77],["nanës,",8.18]],"end":8.57},{"key":"kujtesa","words":[["jeton",8.62],["kujtesa",9.08],["jonë.",9.5]],"end":10.31},{"key":"larg,","words":[["Edhe",12.36],["kur",12.61],["jeta",12.96],["na",13.19],["çon",13.48],["larg,",13.81]],"end":14.15},{"key":"gjuha","words":[["gjuha",14.2],["na",14.56],["e",14.91],["kujton",15.13],["prej",15.43],["kah",15.67],["vijmë.",15.94]],"end":16.65},{"key":"trashëgimia","words":[["Sepse",18.6],["trashëgimia",18.94],["nuk",19.71],["asht",19.9],["veç",20.02],["ajo",20.19],["që",20.42],["marrim…",20.81]],"end":21.41},{"key":"brezave.","words":[["asht",21.46],["edhe",21.7],["ajo",21.9],["që",22.32],["ua",22.51],["lamë",22.91],["brezave.",23.04]],"end":24.0}];
+      const TITLE_CUES = [26.6, 26.8, 27.02, 27.23, 27.48];   // « Mos e harro kush je. », the voice, word by word
+      if (SUBTITLES) $("#subs").innerHTML = CUES.map((c, i) => `<div class="chunk" id="c${i}">${c.words.map(([w]) => `<span class="w${w === c.key ? " k" : ""}">${w}</span>`).join(" ")}</div>`).join("");
+
+      // ================================================================ timeline
+      const tl = gsap.timeline({ paused: true });
+      const clock = { t: 0 };
+      tl.to(clock, { t: 30, duration: 30, ease: "none", onUpdate: () => renderFilm(clock.t) }, 0);
+
+      if (SUBTITLES) CUES.forEach((c, i) => {
         const el = document.getElementById("c" + i), ws = el.querySelectorAll(".w");
-        tl.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.01 }, c.words[0][1] - 0.02);
-        ws.forEach((w, j) => {
-          tl.fromTo(w, { opacity: 0, y: 14, filter: "blur(6px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.32, ease: "power2.out" }, c.words[j][1]);
-          const st = w.querySelector(".stroke");
-          if (st) tl.fromTo(st, { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: "power2.out" }, c.words[j][1] + 0.18);
-        });
-        tl.to(el, { opacity: 0, duration: 0.25, ease: "sine.in" }, c.end - 0.25);
+        tl.set(el, { opacity: 1 }, c.words[0][1] - 0.02);
+        ws.forEach((w, j) => tl.fromTo(w, { opacity: 0, y: 10, filter: "blur(4px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.28, ease: "power2.out" }, c.words[j][1] - 0.04));
+        tl.to(el, { opacity: 0, duration: 0.22, ease: "sine.in" }, c.end - 0.22);
       });
+
+      // signature: the eagle rises out of the dark on the last phrase of the song, the title follows the voice
+      tl.fromTo("#sig-glow", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 2.4, ease: "sine.out" }, 24.95);
+      tl.fromTo("#sig-eagle", { opacity: 0, y: 26, scale: 0.97, filter: "blur(10px) drop-shadow(0 0 46px rgba(220,40,50,.42))" },
+        { opacity: 1, y: 0, scale: 1, filter: "blur(0px) drop-shadow(0 0 46px rgba(220,40,50,.42))", duration: 1.5, ease: "power2.out" }, 25.05);
+      tl.to("#sig-eagle", { y: -8, duration: 3.4, ease: "none" }, 26.55);
+      tl.fromTo("#sig-sheen", { opacity: 1, backgroundPosition: "100% 0" }, { opacity: 1, backgroundPosition: "0% 0", duration: 1.3, ease: "sine.inOut" }, 25.75);
+      document.querySelectorAll("#sig-title .tw").forEach((w, i) => {
+        tl.fromTo(w, { opacity: 0, y: 26, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.55, ease: "power3.out" }, TITLE_CUES[i] - 0.05);
+      });
+      tl.fromTo("#sig-title", { scale: 1 }, { scale: 1.018, duration: 2.4, ease: "none", transformOrigin: "50% 50%" }, 27.6);
+      tl.fromTo("#sig-rule", { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: "power2.out" }, 27.75);
+      tl.fromTo("#sig-logo-wrap", { opacity: 0, scale: 0.96, filter: "blur(6px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.9, ease: "power2.out" }, 28.0);
+      tl.to("#sig-ring-c", { attr: { "stroke-dashoffset": 0 }, duration: 1.1, ease: "power2.inOut" }, 28.15);
 
       window.__timelines["main"] = tl;
+      renderFilm(0);
     </script>
   </body>
 </html>
