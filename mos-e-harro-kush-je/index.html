@@ -191,16 +191,40 @@
         return { fill: d + `L${x1},${bottom} Z`, line: "M" + d.split("L").slice(1).join("L") };
       }
 
-      // standing figure seen from behind, feet at (x, y), height h
+      // standing figure seen from behind, feet at (x, y), height h (unit outline, left half mirrored)
       function person(x, y, h, o = {}) {
-        const r = h * 0.07, hy = y - h + r, sy = hy + r * 1.55, sw = h * 0.25 * (o.wide || 1);
-        let d = `M${x - sw / 2},${sy + r * 0.9} Q${x - sw / 2},${sy} ${x - sw * 0.22},${sy} L${x + sw * 0.22},${sy} Q${x + sw / 2},${sy} ${x + sw / 2},${sy + r * 0.9} `;
-        d += `L${x + sw * 0.44},${y - h * 0.46} L${x + sw * 0.3},${y - h * 0.46} L${x + sw * 0.26},${y} L${x + sw * 0.04},${y} L${x},${y - h * 0.4} L${x - sw * 0.04},${y} L${x - sw * 0.26},${y} L${x - sw * 0.3},${y - h * 0.46} L${x - sw * 0.44},${y - h * 0.46} Z`;
-        let s = `<path d="${d}"/><rect x="${x - r * 0.45}" y="${hy + r * 0.6}" width="${r * 0.9}" height="${r * 1.2}"/><circle cx="${x}" cy="${hy}" r="${r}"/>`;
-        if (o.plis) s += `<path d="M${x - r * 1.02},${hy - r * 0.25} Q${x - r * 1.0},${hy - r * 1.55} ${x},${hy - r * 1.6} Q${x + r * 1.0},${hy - r * 1.55} ${x + r * 1.02},${hy - r * 0.25} Z" fill="${o.plis}"/>`;
-        if (o.cane) s += `<path d="M${x + sw * 0.46},${y - h * 0.47} L${x + sw * 0.62},${y}" stroke="currentColor" stroke-width="${h * 0.012}" fill="none"/>`;
-        return s;
+        const w = o.wide || 1, k = o.kid ? 0.88 : 1;
+        const P = (px, py) => `${(x + px * h * w * k).toFixed(1)},${(y + py * h).toFixed(1)}`;
+        const S = [-0.032, -0.865];
+        const L = [
+          ["C", [-0.04, -0.84], [-0.085, -0.835], [-0.12, -0.815]],
+          ["C", [-0.15, -0.8], [-0.158, -0.77], [-0.16, -0.73]],
+          ["C", [-0.165, -0.64], [-0.168, -0.56], [-0.162, -0.49]],
+          ["C", [-0.16, -0.462], [-0.134, -0.46], [-0.132, -0.49]],
+          ["C", [-0.13, -0.56], [-0.126, -0.62], [-0.12, -0.66]],
+          ...(o.coat
+            ? [["L", [-0.135, -0.3]], ["L", [-0.088, -0.3]], ["L", [-0.086, -0.02]]]
+            : [["L", [-0.112, -0.5]], ["L", [-0.092, -0.02]]]),
+          ["C", [-0.092, 0.004], [-0.035, 0.004], [-0.03, -0.012]],
+          ["L", [-0.01, -0.44]],
+        ];
+        const pts = [S, ...L.map((g) => g[g.length - 1])];
+        let d = `M${P(...S)} ` + L.map((g) => (g[0] === "C" ? `C${P(...g[1])} ${P(...g[2])} ${P(...g[3])}` : `L${P(...g[1])}`)).join(" ");
+        const m = ([px, py]) => P(-px, py);
+        d += ` L${m(pts[pts.length - 1])}`;
+        for (let i = L.length - 1; i >= 0; i--) {
+          const g = L[i], to = pts[i];
+          d += g[0] === "C" ? ` C${m(g[2])} ${m(g[1])} ${m(to)}` : ` L${m(to)}`;
+        }
+        d += " Z";
+        const hx = o.kid ? 0.075 : 0.06, hy = o.kid ? 0.085 : 0.07, hc = o.kid ? -0.905 : -0.925;
+        let out = `<path d="${d}"/><ellipse cx="${x}" cy="${(y + hc * h).toFixed(1)}" rx="${(hx * h).toFixed(1)}" ry="${(hy * h).toFixed(1)}"/>`;
+        if (o.plis) out += `<path class="plis" d="M${P(-0.062, -0.952)} C${P(-0.062, -1.015)} ${P(0.062, -1.015)} ${P(0.062, -0.952)} Z" fill="${o.plis}" stroke="none"/>`;
+        if (o.cane) out += `<path d="M${P(0.15, -0.48)} L${P(0.205, 0)}" stroke-width="${(h * 0.014).toFixed(1)}" fill="none" stroke-linecap="round"/>`;
+        return out;
       }
+      // the same figure twice: a warm stroke behind gives the back-light rim
+      const backlit = (inner, rim, fill, sw) => `<g fill="${rim}" stroke="${rim}" stroke-width="${sw}" stroke-linejoin="round" opacity=".85">${inner}</g><g fill="${fill}" stroke="${fill}" stroke-width="0.01">${inner}</g>`;
 
       function svgDefs(svg, html) { const d = document.createElementNS(NS, "defs"); d.innerHTML = html; svg.appendChild(d); }
 
@@ -243,7 +267,8 @@
         }
         // kulla: stone tower house
         let courses = "";
-        for (let y = 1000; y < 1180; y += 14) courses += `<line x1="636" y1="${y}" x2="784" y2="${y}" stroke="#2e2723" stroke-width="1.5" opacity=".6"/>`;
+        const sr = rng(31);
+        for (let y = 994; y < 1186; y += 15) { let x = 630 - sr() * 20; while (x < 790) { const bw = 18 + sr() * 26, x0 = Math.max(630, x), x1 = Math.min(790, x + bw); courses += `<rect x="${x0.toFixed(1)}" y="${y}" width="${(x1 - x0 - 1.5).toFixed(1)}" height="13.5" rx="2" fill="#${["8a7666", "7a685a", "6c5c50", "958070"][Math.floor(sr() * 4)]}" opacity=".55"/>`; x += bw; } }
         s.innerHTML = `<defs>
             <linearGradient id="s2sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#121a33"/><stop offset=".35" stop-color="#4a2a44"/><stop offset=".55" stop-color="#c0603e"/><stop offset=".66" stop-color="#f3b878"/></linearGradient>
             <linearGradient id="stone" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9a8572"/><stop offset=".6" stop-color="#6d5d50"/><stop offset="1" stop-color="#3f352f"/></linearGradient>
@@ -275,9 +300,11 @@
             <path d="M18,-214 C62,-190 84,-150 104,-118 L90,-106 C66,-140 40,-170 6,-190 Z"/>
           </g>`;
         const kid = (x, y, sc) => `<g transform="translate(${x},${y}) scale(${sc})">
-            <path d="M-72,0 C-82,-60 -62,-120 -22,-136 L14,-136 C46,-120 60,-70 66,0 Z"/>
-            <circle cx="-14" cy="-166" r="27"/><path d="M-40,-176 C-34,-200 6,-204 14,-180 L6,-170 C-6,-186 -26,-184 -36,-168 Z"/>
-            <path d="M-30,-110 C-60,-80 -70,-50 -64,-30 L-50,-30 C-50,-56 -40,-80 -20,-100 Z"/>
+            <path d="M-96,0 C-100,-26 -70,-40 -30,-42 L40,-42 C78,-40 100,-26 96,0 Z"/>
+            <path d="M-40,-30 C-48,-80 -44,-120 -24,-134 C-12,-142 14,-142 24,-134 C40,-120 44,-80 36,-30 Z"/>
+            <path d="M-30,-118 C-56,-96 -66,-64 -50,-40 L-36,-44 C-46,-64 -40,-86 -20,-104 Z"/>
+            <ellipse cx="-16" cy="-166" rx="27" ry="30" transform="rotate(-18 -16 -166)"/>
+            <path d="M-6,-150 L-10,-136 L8,-136 L6,-150 Z"/>
           </g>`;
         room.innerHTML = `<defs>
             <radialGradient id="lampg" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff2cf"/><stop offset=".18" stop-color="#ffb24f" stop-opacity=".9"/><stop offset=".55" stop-color="#d0601e" stop-opacity=".25"/><stop offset="1" stop-color="#b04010" stop-opacity="0"/></radialGradient>
@@ -289,7 +316,7 @@
           <g id="fam" fill="#0c0705" transform="translate(-4,0)">${gm(306, 1186, 1.12)}</g>
           <g fill="#0c0705" transform="translate(4,0)">${kid(800, 1186, 1.12)}</g>
           <rect id="gm-photo" x="404" y="1034" width="56" height="42" fill="#f2e2c0" transform="rotate(-18 432 1055)"/>
-          <ellipse cx="540" cy="1000" rx="190" ry="34" fill="#2a1a10"/><ellipse cx="540" cy="994" rx="190" ry="30" fill="#5a3a22"/><rect x="380" y="1000" width="320" height="70" fill="#1d120b"/>
+          <path d="M410,1004 L404,1070 L418,1070 L428,1010 Z M652,1010 L662,1070 L676,1070 L670,1004 Z M532,1022 L530,1078 L550,1078 L548,1022 Z" fill="#160d08"/><ellipse cx="540" cy="1004" rx="182" ry="30" fill="#1d120b"/><ellipse cx="540" cy="994" rx="182" ry="28" fill="#6a4426"/><ellipse cx="540" cy="992" rx="160" ry="20" fill="#7d5330" opacity=".7"/>
           <path d="M524,990 L556,990 L550,940 L530,940 Z" fill="#7a5a3a"/><ellipse cx="540" cy="936" rx="14" ry="5" fill="#3a2a1a"/>
           <ellipse id="flame" cx="540" cy="908" rx="11" ry="26" fill="#ffe7a8"/>
           <circle cx="540" cy="908" r="80" fill="url(#lampg)"/>`;
@@ -326,8 +353,7 @@
         // the foreground ridge where three generations stand
         g += `<g id="s4-front"><path d="M-300,1330 C100,1300 380,1262 540,1262 C700,1262 980,1300 1380,1340 L1380,1920 L-300,1920 Z" fill="#0b0607"/>
               <path d="M-300,1330 C100,1300 380,1262 540,1262 C700,1262 980,1300 1380,1340" stroke="#ffb46a" stroke-width="3" fill="none" opacity=".55"/>
-              <g fill="#0b0607" color="#0b0607">${person(452, 1268, 250, { plis: "#e9dcc4", cane: 1 })}${person(552, 1266, 270, { wide: 1.05 })}${person(638, 1268, 156)}
-                <path d="M585,1146 L622,1176" stroke="#0b0607" stroke-width="7" stroke-linecap="round"/></g></g>`;
+              ${backlit(`${person(450, 1268, 252, { plis: "#d9ccb2", cane: 1, coat: 1 })}${person(548, 1266, 272)}${person(636, 1268, 160, { kid: 1 })}<path d="M588,1135 C600,1150 612,1160 624,1170" stroke-width="6" fill="none" stroke-linecap="round"/>`, "#ffb06a", "#0b0607", 4)}</g>`;
         s.innerHTML = g;
         $("#s4-rays").innerHTML = [[-30, 0.35], [-12, 0.45], [6, 0.4], [24, 0.3]].map(([a, o]) => `<div class="ray s4-ray" style="left:470px;top:1240px;width:140px;height:1400px;opacity:${o};transform-origin:50% 0;transform:rotate(${180 + a}deg);background:linear-gradient(rgba(255,214,150,.6),rgba(255,180,100,0) 80%)"></div>`).join("");
       })();
