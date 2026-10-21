@@ -46,19 +46,6 @@ def piano(note, dur=3.0):
     return s * att * 0.5
 
 
-def pluck(note, dur=1.6):
-    # Karplus-Strong: a plucked two-string instrument (çifteli-like colour)
-    f = hz(note)
-    p = int(SR / f)
-    n = int(SR * dur)
-    out = np.zeros(n)
-    buf = rng.uniform(-1, 1, p)
-    for i in range(n):
-        out[i] = buf[i % p]
-        buf[i % p] = 0.996 * 0.5 * (buf[i % p] + buf[(i + 1) % p])
-    return out * 0.35
-
-
 def pad(notes, dur, attack=1.6, release=1.4):
     t = np.arange(int(SR * dur)) / SR
     s = np.zeros_like(t)
