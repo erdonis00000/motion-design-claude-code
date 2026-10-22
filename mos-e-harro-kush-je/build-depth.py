@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Depth maps of the three stills, for the 2.5D parallax shader of index.html (V5).
+"""Depth maps of the stills, for the 2.5D parallax shader of index.html (V5).
 
 No depth model is available here, so each map is built by hand from what the picture contains: masks drawn from the
 colours of the image (window opening, sky, photographic paper) and simple geometric planes (floor, wall, hillside).
@@ -85,8 +85,39 @@ def kulla():
     return blur(d, 2.5)
 
 
+def qyteti():
+    # sky above the castle hill and the far ridges; the town recedes from the river (near) to the hill (far)
+    sky = poly([(0, 0), (576, 0), (576, 365), (480, 360), (470, 330), (400, 345), (400, 285), (130, 285), (120, 310), (80, 320), (0, 330)])
+    d = 0.18 + 0.82 * np.clip((yy - 300) / 720, 0, 1) ** 1.1
+    d = np.where(sky > 0.5, 0.0, d)
+    return blur(d, 2.5)
+
+
+def fletorja():
+    # dark room and candle far, the page rises toward the camera, the pen lies above the page
+    d = 0.15 + 0.85 * np.clip((yy - 260) / 760, 0, 1)
+    candle = poly([(205, 15), (325, 15), (330, 265), (200, 265)])
+    d = np.where(candle > 0.5, 0.22, d)
+    pen = poly([(255, 398), (300, 405), (576, 608), (576, 690), (500, 652), (296, 470)])
+    d = np.maximum(d, pen * 0.92)
+    return blur(d, 3)
+
+
+def alpet():
+    # sky, then ridge after ridge toward the camera, two dark foreground cliffs
+    sky = poly([(0, 0), (576, 0), (576, 320), (500, 310), (470, 330), (420, 300), (380, 290), (330, 310), (300, 295), (240, 320),
+                (150, 330), (80, 320), (0, 335)])
+    d = 0.10 + 0.55 * np.clip((yy - 300) / 600, 0, 1)
+    cliff_r = poly([(576, 520), (530, 540), (470, 560), (420, 600), (380, 640), (350, 700), (380, 800), (420, 900), (420, 1024), (576, 1024)])
+    cliff_l = poly([(0, 650), (60, 660), (100, 720), (130, 900), (150, 1024), (0, 1024)])
+    d = np.maximum(d, np.maximum(cliff_r * 0.85, cliff_l * 0.80))
+    d = np.where(sky > 0.5, 0.0, d)
+    return blur(d, 2.5)
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
-    for name, fn in [("01-fenetre", fenetre), ("02-photo", photo), ("03-kulla", kulla)]:
+    for name, fn in [("01-fenetre", fenetre), ("02-photo", photo), ("03-kulla", kulla), ("05-qyteti", qyteti), ("06-fletorja", fletorja),
+                     ("08-alpet", alpet)]:
         Image.fromarray((np.clip(fn(), 0, 1) * 255).astype(np.uint8)).save(os.path.join(OUT, name + ".png"))
         print("wrote", os.path.join("assets/img/ia/depth", name + ".png"))

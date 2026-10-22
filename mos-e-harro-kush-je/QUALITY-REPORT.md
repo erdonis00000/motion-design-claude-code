@@ -82,3 +82,26 @@ La version sans sous-titres (`delivery/mos-e-harro-kush-je-v5-sans-sous-titres.m
 - **Lecture sur un vrai téléphone** : la zone de sécurité est calculée (marges de 120 px à droite, 210 px en haut,
   420 px en bas), mais elle n'a pas été vérifiée dans une application réelle.
 - **Diversité des plans** : limitée par les trois seules images disponibles (voir `CHANGELOG-V5.md`).
+
+## 6. V6 (une seule apparition par image)
+
+| Point | Fichier final | Sans sous-titres |
+| --- | --- | --- |
+| Images | 900, 30/1 constant | 900, 30/1 constant |
+| Débit vidéo | 19,9 Mb/s | 19,9 Mb/s |
+| moov en tête | ✓ | ✓ |
+| Erreurs de décodage | aucune | aucune |
+| Images noires ≥ 0,1 s / figées ≥ 0,5 s | aucune / aucune | aucune / aucune |
+| Sonie / true peak | −14,5 LUFS / −1,4 dBTP | −14,5 LUFS / −1,4 dBTP |
+
+- **Règle d'une seule apparition** : la planche à 2 images/s du fichier final montre six blocs continus, sans aucun
+  retour : fenêtre 0–6 s, photo 6–11,5 s, ville 11,5–14 s, cahier 14–17 s, kulla 17–21,5 s, panorama
+  21,5–30 s. Dans `SHOTS`, chaque valeur de `img` n'est utilisée qu'une fois.
+- **Transitions contrôlées** :
+  - photo → ville à 11,4 s (voile de lumière) ;
+  - ville → cahier à 14,15 s (fondu) ;
+  - cahier → kulla à 16,8 s (la flamme devient la fenêtre) ;
+  - oiseau → emblème à 24,9 / 25,1 / 25,3 / 25,6 s. Un premier essai laissait l'oiseau visible à travers
+    l'emblème : corrigé, puis revérifié sur le fichier final aux images 759 et 768.
+- **Raccord à l'image 735** vérifié : masters identiques entre 24,05 et 24,5 s (PSNR de 46,9 dB), écart régulier entre
+  images consécutives (0,65 à 0,84 sur 255).
