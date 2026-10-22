@@ -105,3 +105,32 @@ La version sans sous-titres (`delivery/mos-e-harro-kush-je-v5-sans-sous-titres.m
     l'emblème : corrigé, puis revérifié sur le fichier final aux images 759 et 768.
 - **Raccord à l'image 735** vérifié : masters identiques entre 24,05 et 24,5 s (PSNR de 46,9 dB), écart régulier entre
   images consécutives (0,65 à 0,84 sur 255).
+
+## 7. V7 (les illustrations prennent vie)
+
+| Point | Fichier final | Sans sous-titres |
+| --- | --- | --- |
+| Images | 900, 30/1 constant | 900, 30/1 constant |
+| Débit vidéo | 19,9 Mb/s | 19,9 Mb/s |
+| moov en tête | ✓ | ✓ |
+| Erreurs de décodage | aucune | aucune |
+| Images noires ≥ 0,1 s / figées ≥ 0,5 s | aucune / aucune | aucune / aucune |
+| Sonie / true peak | −14,5 LUFS / −1,4 dBTP | −14,5 LUFS / −1,4 dBTP |
+
+- **Animations présentes dans les fichiers finaux** : comparaison avec la V6 aux images 60, 378, 585 et 690. Les
+  différences sont dans les zones prévues (poussière et rayons, fenêtres et rivière, herbe et lampe, aigle et nuages),
+  et nulle part ailleurs.
+- **Régularité d'une image à l'autre**, écart moyen entre images consécutives par plan. Le rapport entre l'écart maximal
+  et l'écart médian reste entre 1,1 et 1,9 dans tous les plans animés : aucun saut, aucun scintillement.
+  - Le plus grand écart du film (18,6 à l'image 342) est le voile de lumière voulu entre la photo et la ville.
+  - L'image la plus sombre (761) est la scène noire de la signature.
+- **Image 0** de la version sans sous-titres : noire au rendu (textures pas encore prêtes), corrigée dans la livraison
+  et dans le code. Voir `CHANGELOG-V7.md`. L'image 0 vérifiée sur les six fichiers V5, V6 et V7 a une moyenne de 42,3
+  à 42,5.
+- **Pendant le réglage** :
+  - A/B avec et sans animation (variable `animate`) ;
+  - banc Chromium à l'image près pour la flamme, l'eau, la lampe et l'aigle ;
+  - inspection à 400 % du bord des volets dans la brume, sans traînée ;
+  - grain du ciel reconstitué derrière l'aigle mesuré à 3,04, contre 3,01 pour le ciel d'origine.
+- **Non vérifiable ici** : je ne peux pas regarder la vidéo défiler. Le jugement sur le mouvement repose sur des
+  séquences d'images rapprochées et sur des mesures. Un visionnage sur téléphone reste nécessaire.

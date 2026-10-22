@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="sq" data-composition-variables='[{"id":"subtitles","type":"boolean","label":"Burned-in subtitles","default":true}]'>
+<html lang="sq" data-composition-variables='[{"id":"subtitles","type":"boolean","label":"Burned-in subtitles","default":true},{"id":"animate","type":"boolean","label":"Life of the stills (V7)","default":true}]'>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=1080, height=1920" />
@@ -63,7 +63,11 @@
         <img id="im2" src="assets/img/ia/03-kulla.jpg" alt="" /><img id="dp2" src="assets/img/ia/depth/03-kulla.png" alt="" />
         <img id="im3" src="assets/img/ia/05-qyteti.jpg" alt="" /><img id="dp3" src="assets/img/ia/depth/05-qyteti.png" alt="" />
         <img id="im4" src="assets/img/ia/06-fletorja.jpg" alt="" /><img id="dp4" src="assets/img/ia/depth/06-fletorja.png" alt="" />
-        <img id="im5" src="assets/img/ia/08-alpet.jpg" alt="" /><img id="dp5" src="assets/img/ia/depth/08-alpet.png" alt="" />
+        <img id="im5" src="assets/img/ia/08-alpet-ciel.jpg" alt="" /><img id="dp5" src="assets/img/ia/depth/08-alpet.png" alt="" />
+        <img id="an0" src="assets/img/ia/anim/01-fenetre.png" alt="" /><img id="an1" src="assets/img/ia/anim/02-photo.png" alt="" />
+        <img id="an2" src="assets/img/ia/anim/03-kulla.png" alt="" /><img id="an3" src="assets/img/ia/anim/05-qyteti.png" alt="" />
+        <img id="an4" src="assets/img/ia/anim/06-fletorja.png" alt="" /><img id="an5" src="assets/img/ia/anim/08-alpet.png" alt="" />
+        <img id="bird" src="assets/img/ia/08-alpet-aigle.png" alt="" />
       </div>
 
       <section id="filmclip" class="clip" data-start="0" data-duration="30" data-track-index="1">
@@ -91,8 +95,11 @@
     <script>
       window.__timelines = window.__timelines || {};
       const $ = (s) => document.querySelector(s);
-      const VARS = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {};
+      // variables: from the HyperFrames runtime, else the defaults declared on <html> (plain browser preview)
+      const VARS = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) ||
+        Object.fromEntries(JSON.parse(document.documentElement.dataset.compositionVariables || "[]").map((v) => [v.id, v.default]));
       const SUBTITLES = VARS.subtitles !== false;
+      const ANIMATE = VARS.animate !== false;     // false: stills stay stills (only the camera moves), for A/B checks
 
       // ================================================================ SHOTS (all times in film seconds)
       // img: 0 window, 1 family photograph, 2 kulla, 3 old town at dusk, 4 notebook and candle, 5 Alps at sunset.
@@ -117,12 +124,12 @@
         { id: "F-fletorja", img: 4, t0: 13.95, t1: 17.15, keys: [
           { t: 13.95, cx: 0.42, cy: 0.58, z: 1.75, px: 0.006, py: 0.004, k: 0.04, f: 0.7, ex: 1.0, ry: 0.35, lx: 0.48, ly: -0.10 },
           { t: 15.6, cx: 0.47, cy: 0.42, z: 1.88, px: 0.0, py: -0.002, ry: 0.45, lx: 0.48, ly: 0.0, ease: "sine.inOut" },
-          { t: 17.15, cx: 0.46, cy: 0.22, z: 1.62, px: -0.006, py: -0.006, k: 0.10, ex: 1.12, ry: 0.85, lx: 0.50, ly: 0.30, ease: "power2.in" } ] },
+          { t: 17.15, cx: 0.46, cy: 0.21, z: 1.66, px: -0.006, py: -0.006, k: 0.10, ex: 1.12, ry: 0.85, lx: 0.50, ly: 0.30, ease: "sine.inOut" } ] },
         { id: "G-kulla", img: 2, t0: 16.55, t1: 21.95, keys: [
           { t: 16.55, cx: 0.37, cy: 0.305, z: 2.15, px: 0.004, py: 0, k: -0.06, f: 0.42, ex: 0.96, ry: 0.30, lx: 0.98, ly: 0.12 },
           { t: 19.0, cx: 0.45, cy: 0.40, z: 1.52, px: -0.004, k: -0.04, ex: 1.0, ease: "sine.out" },
           { t: 21.95, cx: 0.52, cy: 0.62, z: 1.30, px: -0.008, py: 0.004, k: -0.02, f: 0.55, ry: 0.25, ease: "sine.inOut" } ] },
-        { id: "H-alpet", img: 5, t0: 21.35, t1: 30.0, keys: [
+        { id: "H-alpet", img: 5, eagle: true, t0: 21.35, t1: 30.0, keys: [
           { t: 21.35, cx: 0.50, cy: 0.62, z: 1.30, px: 0.0, py: 0.006, k: 0.0, f: 0.4, ex: 1.0, ry: 0.35, lx: 0.60, ly: -0.15 },
           { t: 24.85, cx: 0.53, cy: 0.26, z: 1.55, px: 0.006, py: -0.008, k: 0.10, ex: 1.22, ry: 1.0, lx: 0.65, ly: 0.42, ease: "sine.inOut" },
           { t: 25.35, z: 1.58, ex: 0.16, ry: 0.15, sat: 0.55, ease: "sine.out" },
@@ -136,6 +143,50 @@
         { a: 3, b: 4, t0: 16.55, t1: 17.15, type: "light" },
         { a: 4, b: 5, t0: 21.35, t1: 21.95, type: "dissolve" },
       ];
+
+      // ================================================================ ANIM: the life of each still (V7)
+      // Where a still may move comes from its animation map (build-anim.py): R drift, G water or grass, B flame/lamp/windows.
+      // How much, here, per shot. Everything stays below what the eye reads as an effect: a few pixels of travel, a few
+      // per cent of light. Units are still uv (1 = the width of the still) and seconds.
+      //   drift   amp (warp), speed (field travel / s), wisps (opacity of the drifting mist)
+      //   water   amp, speed, sparkle (glints of the street lights)          windows  span over which some come on
+      //   flicker amount, at (x, y) with radius r; sway (flame), haze (air above it)
+      //   breeze  amp (grass)          dust  amount (motes lit by the beams)          sweep  sunlight across the print
+      //   dof     [blur radius per unit of depth, focus depth] (shallow depth of field from the depth map)
+      const ANIM = {
+        "A-fenetre": { drift: [0.006, 0.08, 0.35], dust: 1.0 },
+        "C-photo": { dust: 0.8, sweep: 0.12 },
+        "E-qyteti": { water: [0.0035, 0.35, 0.3], windows: 2.2 },
+        "F-fletorja": { flicker: [0.12, 0.461, 0.128, 0.45], sway: 0.006, haze: 0.0025, dof: [0.013, 0.92] },
+        "G-kulla": { drift: [0.004, 0.05, 0.25], flicker: [0.35, 0.36, 0.306, 0.012], breeze: 0.0022 },
+        "H-alpet": { drift: [0.005, 0.06, 0.3] },
+      };
+      function animOf(s) {
+        const a = (ANIMATE && ANIM[s.id]) || {}, d = a.drift || [0, 0, 0], w = a.water || [0, 0, 0], f = a.flicker || [0, 0, 0, 0];
+        return new Float32Array([
+          d[0], d[1], d[2], 0,
+          w[0], w[1], w[2], a.windows || 0,
+          f[0], a.sway || 0, a.haze || 0, a.breeze || 0,
+          f[1], f[2], f[3], a.dust || 0,
+          a.sweep || 0, s.t0, (a.dof || [0, 0])[0], (a.dof || [0, 0])[1]]);
+      }
+      // the eagle of the panorama (sprite cut out by build-anim.py, 150 x 97 px, half width 0.0651 of the still) glides
+      // from the left of the sky to the exact place where it was photographed, which is where the emblem of the
+      // signature appears; it banks gently and grows a little as it comes closer
+      const EAGLE = [
+        { t: 21.35, x: 0.37, y: 0.214, hw: 0.050, a: -0.11 },
+        { t: 24.85, x: 0.5339, y: 0.1726, hw: 0.0651, a: 0.0 },
+        { t: 25.6, x: 0.546, y: 0.168, hw: 0.067, a: 0.02 },
+      ];
+      function eagleAt(s, t) {
+        if (!ANIMATE) return [EAGLE[1].x, EAGLE[1].y, EAGLE[1].hw, 0];
+        const k = EAGLE;
+        let i = 1;
+        while (i < k.length - 1 && t > k[i].t) i++;
+        const a = k[i - 1], b = k[i], u = Math.min(1, Math.max(0, (t - a.t) / (b.t - a.t))), e = i === 1 ? -(Math.cos(Math.PI * u) - 1) / 2 : u;
+        const L = (p) => a[p] + (b[p] - a[p]) * e;
+        return [L("x"), L("y"), L("hw"), L("a") + 0.03 * Math.sin(t * 0.9)];
+      }
 
       // ================================================================ easing + keyframe evaluation (deterministic)
       const EASE = {
@@ -181,12 +232,25 @@
       const FS = `#version 300 es
         precision highp float;
         in vec2 uv; out vec4 o;
-        uniform sampler2D imA, dpA, imB, dpB;
+        uniform sampler2D imA, dpA, anA, imB, dpB, anB, bird;
         uniform vec4 camA, camB;      // cx, cy, zoom, dolly
         uniform vec4 offA, offB;      // px, py, focus depth, exposure
         uniform vec4 litA, litB;      // light x, y, ray strength, saturation
-        uniform float mixAB, lightCut, frame;
+        uniform vec4 aA[5], aB[5];    // life of the still, see ANIM in the script
+        uniform vec4 birdA, birdB;    // eagle: centre (still uv), half width (still uv, 0 = none), bank angle
+        uniform float mixAB, lightCut, frame, time, life;
+        const float ASPECT = 1.7778;  // height / width of the stills and of the frame
         float luma(vec3 c) { return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
+        float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+        float vnoise(vec2 p) {
+          vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+          return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+        }
+        float fbm(vec2 p) {
+          float v = 0.0, a = 0.5;
+          for (int i = 0; i < 4; i++) { v += a * vnoise(p); p = p * 2.03 + vec2(1.7, 9.2); a *= 0.5; }
+          return v;
+        }
         vec2 parallax(sampler2D dp, vec4 cam, vec4 off, vec2 uv) {
           vec2 p = cam.xy + (uv - 0.5) / cam.z, q = p;
           for (int i = 0; i < 5; i++) {
@@ -195,10 +259,114 @@
           }
           return q;
         }
-        vec3 shot(sampler2D im, sampler2D dp, vec4 cam, vec4 off, vec4 lit) {
+        // dust in the air: two layers of motes (near and out of focus, far and sharp), lit only where the light is
+        float dust(vec4 cam) {
+          float acc = 0.0;
+          for (int L = 0; L < 2; L++) {
+            float fl = float(L), cells = mix(11.0, 24.0, fl);
+            vec2 p = cam.xy + (uv - 0.5) / (cam.z * mix(0.85, 1.0, fl));
+            p = p * vec2(cells, cells * ASPECT) + vec2(time * mix(0.06, 0.035, fl), -time * mix(0.16, 0.09, fl));
+            vec2 id = floor(p), f = fract(p);
+            float h = hash(id + fl * 17.0);
+            if (h > 0.5) {
+              vec2 pos = vec2(hash(id + 3.1), hash(id + 7.7)) * 0.56 + 0.22 + 0.1 * vec2(sin(time * 0.6 + h * 20.0), cos(time * 0.45 + h * 13.0));
+              float r = mix(0.075, 0.05, fl) * (0.6 + 0.8 * hash(id + 1.9));
+              float soft = mix(0.75, 0.3, fl);
+              float m = 1.0 - smoothstep(r * (1.0 - soft), r, length(f - pos));
+              acc += m * (0.6 + 0.4 * sin(time * (0.8 + 2.5 * h) + h * 40.0)) * mix(0.35, 0.6, fl);
+            }
+          }
+          return acc;
+        }
+        vec3 shot(sampler2D im, sampler2D dp, sampler2D an, vec4 cam, vec4 off, vec4 lit, vec4 P[5], vec4 eagle) {
           vec2 q = parallax(dp, cam, off, uv);
+          vec3 m = texture(an, q).rgb;
+          // mist, haze and clouds: the still is gently warped by a slowly travelling noise field
+          if (P[0].x > 0.0 && m.r > 0.004) {
+            vec2 fp = q * vec2(3.0, 5.0) + vec2(time * P[0].y, time * P[0].y * 0.3);
+            q += m.r * P[0].x * (vec2(fbm(fp), fbm(fp + vec2(5.2, 1.3))) - 0.5);
+          }
+          // water: ripples stretched along the surface, travelling toward the camera
+          if (P[1].x > 0.0 && m.g > 0.004) {
+            float n1 = vnoise(vec2(q.x * 90.0, q.y * 260.0 - time * P[1].y * 6.0)) - 0.5;
+            float n2 = vnoise(vec2(q.x * 40.0 + time * 0.3, q.y * 120.0 - time * P[1].y * 4.0)) - 0.5;
+            q += m.g * P[1].x * vec2(n1 + 0.6 * n2, 0.25 * n2);
+          }
+          // grass: a gust travels across the slope, the blades bend and come back
+          if (P[2].w > 0.0 && m.g > 0.004) {
+            float gust = 0.55 + 0.45 * sin(time * 0.9 - q.x * 5.0);
+            q.x += m.g * P[2].w * gust * (0.6 * sin(time * 2.3 + q.y * 55.0 + q.x * 12.0) + vnoise(vec2(q.x * 30.0, q.y * 60.0 + time * 1.5)) - 0.5);
+          }
+          // the flame sways, more at its tip; the air above it shimmers
+          if (P[2].y > 0.0 && m.b > 0.004) {
+            float tip = clamp((P[3].y - q.y) / 0.10, 0.0, 1.0);
+            q.x += m.b * P[2].y * tip * (vnoise(vec2(time * 2.2, 1.7)) - 0.5 + 0.45 * (vnoise(vec2(time * 6.5, 4.1)) - 0.5));
+            q.y += m.b * P[2].y * 0.45 * tip * (vnoise(vec2(time * 3.1, 7.3)) - 0.5);
+          }
+          if (P[2].z > 0.0) {
+            float above = smoothstep(0.0, 0.04, (P[3].y - 0.10) - q.y) * exp(-pow((q.x - P[3].x) / 0.04, 2.0));
+            q.x += P[2].z * above * (vnoise(vec2(q.y * 70.0 + time * 5.0, time * 0.5)) - 0.5);
+          }
           vec3 c = texture(im, q).rgb;
-          // light rays: highlights of the still smeared toward the light source, in screen space
+          // shallow depth of field (macro lens): 12 taps on a disc whose radius grows with the distance to the focus depth
+          if (P[4].z > 0.0) {
+            float r = P[4].z * abs(texture(dp, q).r - P[4].w);
+            if (r > 0.0004) {
+              float lod = max(0.0, log2(r * 1152.0 / 3.0));
+              vec3 acc = c;
+              for (int i = 0; i < 12; i++) {
+                float an = float(i) * 2.39996, rr = sqrt((float(i) + 0.5) / 12.0);
+                acc += textureLod(im, q + r * rr * vec2(cos(an), sin(an) / ASPECT), lod).rgb;
+              }
+              c = acc / 13.0;
+            }
+          }
+          // the eagle glides over the clean sky plate
+          if (eagle.z > 0.0) {
+            vec2 d = (q - eagle.xy) * vec2(1.0, ASPECT);
+            float ca = cos(eagle.w), sa = sin(eagle.w);
+            d = vec2(ca * d.x + sa * d.y, -sa * d.x + ca * d.y);
+            vec2 hs = vec2(eagle.z, eagle.z * 0.6467 * (1.0 + 0.025 * sin(time * 1.4)));
+            vec2 su = d / (2.0 * hs) + 0.5;
+            if (su.x > 0.0 && su.x < 1.0 && su.y > 0.0 && su.y < 1.0) {
+              vec4 e = texture(bird, su);
+              c = mix(c, e.rgb, e.a);
+            }
+          }
+          // wisps of mist drifting through, tinted with the colour around them
+          if (P[0].z > 0.0 && m.r > 0.004) {
+            vec2 fp = q * vec2(2.2, 6.0) + vec2(-time * P[0].y * 0.9, time * 0.01);
+            float w = smoothstep(0.42, 0.82, fbm(fp));
+            vec3 tint = textureLod(im, q, 5.0).rgb * 1.08 + 0.02;
+            c = mix(c, tint, m.r * P[0].z * w);
+          }
+          // street lights glinting on the river
+          if (P[1].z > 0.0 && m.g > 0.004) {
+            // only inside the reflection columns of the lights, as short horizontal glints (ripples catching the light)
+            float lb = luma(textureLod(im, q, 2.0).rgb);
+            float sp = vnoise(vec2(q.x * 160.0, q.y * 1400.0 - time * 2.0)) * vnoise(vec2(q.x * 110.0 + time * 0.5, q.y * 700.0));
+            c += m.g * P[1].z * smoothstep(0.42, 0.75, sp) * smoothstep(0.30, 0.55, lb) * vec3(1.0, 0.85, 0.6);
+          }
+          // windows: most are lit, some come on while we look (P[1].w = the span over which they come on)
+          if (P[1].w > 0.0 && m.b > 0.02) {
+            float h = hash(floor(q * vec2(60.0, 110.0)));
+            float on = h < 0.6 ? 1.0 : smoothstep(0.0, 0.2, time - (P[4].y + 0.5 + (h - 0.6) / 0.4 * P[1].w));
+            c = mix(c, c * 0.3 + vec3(0.012, 0.014, 0.022), m.b * (1.0 - on));
+          }
+          // a flame or a lamp breathes: its light flickers on everything around it
+          if (P[2].x > 0.0) {
+            float f = 0.7 * (vnoise(vec2(time * 7.0, 3.3)) - 0.5) + 0.3 * (vnoise(vec2(time * 17.0, 9.1)) - 0.5);
+            vec2 dd = (q - P[3].xy) * vec2(1.0, ASPECT);
+            c *= 1.0 + P[2].x * f * exp(-dot(dd, dd) / (P[3].z * P[3].z));
+          }
+          // sunlight slides across the photographic paper
+          if (P[4].x > 0.0) {
+            float pos = 0.2 + (time - P[4].y) * 0.15;
+            float band = exp(-pow((dot(q, vec2(0.8, 0.6)) - pos) / 0.08, 2.0));
+            c *= 1.0 + P[4].x * band * smoothstep(0.75, 0.85, texture(dp, q).r);
+          }
+          // light rays: highlights of the still smeared toward the light source; the beams breathe slowly
+          float beam = 0.0;
           if (lit.z > 0.001) {
             vec2 st = (lit.xy - uv) / 22.0, s = uv; float w = 1.0; vec3 acc = vec3(0.0);
             for (int i = 0; i < 22; i++) {
@@ -206,8 +374,12 @@
               vec3 h = texture(im, cam.xy + (s - 0.5) / cam.z).rgb;
               acc += max(h - 0.62, 0.0) * w; w *= 0.93;
             }
-            c += acc * vec3(1.0, 0.82, 0.58) * lit.z * 0.11;
+            float ang = atan(uv.y - lit.y, uv.x - lit.x);
+            float breathe = 1.0 + life * 0.5 * (vnoise(vec2(ang * 9.0, time * 0.35)) - 0.5);
+            c += acc * vec3(1.0, 0.82, 0.58) * lit.z * 0.11 * breathe;
+            beam = luma(acc) * lit.z * breathe;
           }
+          if (P[3].w > 0.0) c += dust(cam) * P[3].w * (0.03 + 0.5 * beam) * vec3(1.0, 0.86, 0.66);
           c *= off.w;
           float l = luma(c);
           c = mix(vec3(l), c, lit.w);
@@ -217,12 +389,11 @@
           vec3 k = step(0.78, x);
           return mix(x, 0.78 + 0.22 * (1.0 - exp(-(x - 0.78) / 0.22)), k);
         }
-        float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
         void main() {
-          vec3 a = shot(imA, dpA, camA, offA, litA);
+          vec3 a = shot(imA, dpA, anA, camA, offA, litA, aA, birdA);
           vec3 c = a;
           if (mixAB > 0.0) {
-            vec3 b = shot(imB, dpB, camB, offB, litB);
+            vec3 b = shot(imB, dpB, anB, camB, offB, litB, aB, birdB);
             float m = mixAB;
             if (lightCut > 0.5) {                    // through a warm veil of light: a brightens, b comes out of it
               float v = pow(sin(3.14159 * mixAB), 1.4);
@@ -260,7 +431,8 @@
       const loc = gl.getAttribLocation(prog, "p");
       gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
       const U = {};
-      ["imA", "dpA", "imB", "dpB", "camA", "camB", "offA", "offB", "litA", "litB", "mixAB", "lightCut", "frame"].forEach((n) => (U[n] = gl.getUniformLocation(prog, n)));
+      ["imA", "dpA", "anA", "imB", "dpB", "anB", "bird", "camA", "camB", "offA", "offB", "litA", "litB", "aA[0]", "aB[0]", "birdA", "birdB",
+        "mixAB", "lightCut", "frame", "time", "life"].forEach((n) => (U[n] = gl.getUniformLocation(prog, n)));
       const TEX = {};
       function tex(id) {
         if (TEX[id]) return TEX[id];
@@ -268,7 +440,8 @@
         if (!el.complete || !el.naturalWidth) return null;
         const t = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, t);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, el);
+        const fmt = id === "bird" ? gl.RGBA : gl.RGB;
+        gl.texImage2D(gl.TEXTURE_2D, 0, fmt, fmt, gl.UNSIGNED_BYTE, el);
         gl.generateMipmap(gl.TEXTURE_2D);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -278,16 +451,20 @@
       }
       function bindShot(slot, s, t) {
         const c = camAt(s, t), sfx = slot === 0 ? "A" : "B";
-        const im = tex("im" + s.img), dp = tex("dp" + s.img);
-        if (!im || !dp) return false;
-        gl.activeTexture(gl.TEXTURE0 + slot * 2); gl.bindTexture(gl.TEXTURE_2D, im); gl.uniform1i(U["im" + sfx], slot * 2);
-        gl.activeTexture(gl.TEXTURE1 + slot * 2); gl.bindTexture(gl.TEXTURE_2D, dp); gl.uniform1i(U["dp" + sfx], slot * 2 + 1);
+        const im = tex("im" + s.img), dp = tex("dp" + s.img), an = tex("an" + s.img);
+        if (!im || !dp || !an) return false;
+        gl.activeTexture(gl.TEXTURE0 + slot * 3); gl.bindTexture(gl.TEXTURE_2D, im); gl.uniform1i(U["im" + sfx], slot * 3);
+        gl.activeTexture(gl.TEXTURE1 + slot * 3); gl.bindTexture(gl.TEXTURE_2D, dp); gl.uniform1i(U["dp" + sfx], slot * 3 + 1);
+        gl.activeTexture(gl.TEXTURE2 + slot * 3); gl.bindTexture(gl.TEXTURE_2D, an); gl.uniform1i(U["an" + sfx], slot * 3 + 2);
+        gl.uniform4fv(U["a" + sfx + "[0]"], animOf(s));
+        const e = s.eagle ? eagleAt(s, t) : [0, 0, 0, 0];
+        gl.uniform4f(U["bird" + sfx], e[0], e[1], e[2], e[3]);
         gl.uniform4f(U["cam" + sfx], c.cx, c.cy, c.z, c.k);
         gl.uniform4f(U["off" + sfx], c.px, c.py, c.f, c.ex);
         gl.uniform4f(U["lit" + sfx], c.lx, c.ly, c.ry, c.sat);
         return true;
       }
-      function renderFilm(t) {
+      let renderFilm = function (t) {
         gl.viewport(0, 0, 1080, 1920);
         let cut = CUTS.find((c) => t >= c.t0 && t < c.t1), a, b = null, m = 0;
         if (cut) { a = SHOTS[cut.a]; b = SHOTS[cut.b]; m = (t - cut.t0) / (cut.t1 - cut.t0); m = m * m * (3 - 2 * m); }
@@ -298,9 +475,23 @@
         gl.uniform1f(U.mixAB, b ? m : 0);
         gl.uniform1f(U.lightCut, cut && cut.type === "light" ? 1 : 0);
         gl.uniform1f(U.frame, Math.round(t * 30));
+        gl.uniform1f(U.time, t);
+        gl.uniform1f(U.life, ANIMATE ? 1 : 0);
+        const bt = tex("bird");
+        if (!bt) return;
+        gl.activeTexture(gl.TEXTURE6); gl.bindTexture(gl.TEXTURE_2D, bt); gl.uniform1i(U.bird, 6);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-      }
+      };
       window.addEventListener("hf-seek", (e) => renderFilm(e.detail.time));
+      // upload every texture as soon as its image is decoded, then redraw the current frame: the first frame captured
+      // must never be the empty canvas of a texture that was not ready yet
+      let lastT = 0;
+      const renderAt = renderFilm;
+      renderFilm = (t) => { lastT = t; renderAt(t); };
+      [...document.querySelectorAll("#srcimg img")].forEach((el) => {
+        const ready = () => { tex(el.id); renderAt(lastT); };
+        if (el.complete && el.naturalWidth) ready(); else el.addEventListener("load", ready, { once: true });
+      });
 
       // ================================================================ subtitles (word cues: build-cues.py -> cues-v5.json)
       const CUES = [{"key":"","words":[["Ka",0.8],["vende",1.0],["që",1.36],["i",1.62],["lamë",1.9],["mbrapa…",2.15]],"end":2.92},{"key":"kurrë","words":[["por",2.99],["që",3.25],["kurrë",3.37],["nuk",3.67],["na",3.82],["lanë",4.06],["neve.",4.51]],"end":5.15},{"key":"gjyshërve,","words":[["Në",5.8],["zânin",5.98],["e",6.44],["gjyshërve,",6.7]],"end":7.22},{"key":"nanës,","words":[["në",7.27],["fjalët",7.41],["e",7.77],["nanës,",8.18]],"end":8.57},{"key":"kujtesa","words":[["jeton",8.62],["kujtesa",9.08],["jonë.",9.5]],"end":10.31},{"key":"larg,","words":[["Edhe",12.36],["kur",12.61],["jeta",12.96],["na",13.19],["çon",13.48],["larg,",13.81]],"end":14.15},{"key":"gjuha","words":[["gjuha",14.2],["na",14.56],["e",14.91],["kujton",15.13],["prej",15.43],["kah",15.67],["vijmë.",15.94]],"end":16.65},{"key":"trashëgimia","words":[["Sepse",18.6],["trashëgimia",18.94],["nuk",19.71],["asht",19.9],["veç",20.02],["ajo",20.19],["që",20.42],["marrim…",20.81]],"end":21.41},{"key":"brezave.","words":[["asht",21.46],["edhe",21.7],["ajo",21.9],["që",22.32],["ua",22.51],["lamë",22.91],["brezave.",23.04]],"end":24.0}];
